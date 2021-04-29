@@ -142,21 +142,7 @@ control MyEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
 
-    action drop() {
-        mark_to_drop(standard_metadata);
-    }
-
-   action modify_ether_type() {
-        hdr.ethernet.etherType = TYPE_IPV4;
-   }
-
-    apply {
-        // Prune multicast packet to ingress port to preventing loop
-        modify_ether_type();
-        if (standard_metadata.egress_port == standard_metadata.ingress_port)
-            drop();
-    }
-
+	apply {  }
 }
 
 /*************************************************************************
