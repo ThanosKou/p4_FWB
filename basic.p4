@@ -1,4 +1,4 @@
-* -*- P5_16 -*- */
+/* -*- P5_16 -*- */
 #include <core.p4>
 #include <v1model.p4>
 
@@ -106,19 +106,6 @@ control MyIngress(inout headers hdr,
         mark_to_drop(standard_metadata);
     }
 
-#    action check_heartbeat() {
-
-#    }
-
-   # action multicast() {                         // multicast heartbeat to serving BSs
-   #     standard_metadata.mcast_grp = 1;
-   # }
-
-    action mac_forward(egressSpec_t port) {
-        standard_metadata.egress_spec = port;
-    }
-
-
     action ipv4_forward(macAddr_t dstAddr, egressSpec_t port) {
         standard_metadata.egress_spec = port;
         hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
@@ -139,33 +126,11 @@ control MyIngress(inout headers hdr,
         default_action = drop();
     }
 
-   # table heartbeat_exact {
-   #     key = {
-   #         hdr.ethernet.dstAddr : exact;
-   #     }
-   #     actions = {
-   #         multicast;
-   #         mac_forward;
-   #         drop;
-   #     }
-   #     size = 1024;
-   #     default_action = multicast;
-   # }
-
-
+ 
     apply {
 	if (hdr.ipv4.isValid()) {
             ipv4_lpm.apply();
-        }
-
-        #if (hdr.ipv4.isValid() && !hdr.heartBeat.isValid()) {
-        #    ipv4_lpm.apply();
-        #}
-
-        #if (hdr.heartBeat.isValid()) {
-        #    // process heartbeat signal
-        #    heartbeat_exact.apply();
-        #}
+        }       
     }
 }
 
@@ -243,6 +208,3 @@ MyEgress(),
 MyComputeChecksum(),
 MyDeparser()
 ) main;
-                                                                                                                                     240,1         Bot
-
-
