@@ -4,10 +4,12 @@ import sys
 import socket
 import random
 import struct
+import argparse
 
-from scapy.all import sendp, send, get_if_list, get_if_hwaddr
+from scapy.all import sendp, send, get_if_list, get_if_hwaddr, hexdump
 from scapy.all import Packet
 from scapy.all import Ether, IP, UDP, TCP
+from heartbeat_header import heartBeat
 
 def get_if():
     ifs=get_if_list()
@@ -22,18 +24,28 @@ def get_if():
     return iface
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('ip_addr', type=str, help="The destination IP address to use")
+    parser.add_argument('message', type=str, help="The message to include in packet")
+    parser.add_argument('--dst_id', type=int, default=None, help='The heartBeat dst_id to use, if unspecified then heartbeat header will not be included in packet')
+    args = parser.parse_args()
 
-    if len(sys.argv)<3:
-        print 'pass 2 arguments: <destination> "<message>"'
-        exit(1)
-
-    addr = socket.gethostbyname(sys.argv[1])
+    addr = socket.gethostbyname(args.ip_addr)
+    dst_id = args.dst_id
     iface = get_if()
 
-    print "sending on interface %s to %s" % (iface, str(addr))
-    pkt =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff')
-    pkt = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535)) / sys.argv[2]
+    if (dst_id is not None):
+        print "sending on interface {} to dst_id {}".format(iface, str(dst_id))
+        pkt =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff')
+        pkt = pkt / heartBeat(dst_id=dst_id) / IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535)) / args.message
+    else:
+        print "sending on interface {} to IP addr {}".format(iface, str(addr))
+        pkt =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff')
+        pkt = pkt / IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535)) / args.message
+
     pkt.show2()
+#    hexdump(pkt)
+#    print "len(pkt) = ", len(pkt)
     sendp(pkt, iface=iface, verbose=False)
 
 
