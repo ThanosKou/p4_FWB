@@ -3,7 +3,7 @@
 #include <v1model.p4>
 
 const bit<16> TYPE_IPV4 = 0x800;
-const bit<16> TYPE_MYTUNNEL = 0x1212; // indicating heartbeat signal
+const bit<16> TYPE_HEARTBEAT = 0x1212; // indicating heartbeat signal
 
 /*************************************************************************
 *********************** H E A D E R S  ***********************************
@@ -45,7 +45,7 @@ struct metadata {
 
 struct headers {
     ethernet_t   ethernet;
-    heartbeat_t  heartbeat;
+    heartbeat_t  heartBeat;
     ipv4_t       ipv4;
 }
 
@@ -66,14 +66,14 @@ parser MyParser(packet_in packet,
         packet.extract(hdr.ethernet);
         transition select(hdr.ethernet.etherType) {
             TYPE_IPV4: parse_ipv4;
-            TYPE_MYTUNNEL: parse_heartbeat;
+            TYPE_HEARTBEAT: parse_heartbeat;
             default: accept;
         }
     }
 
     state parse_heartbeat {
-        packet.extract(hdr.heartbeat);
-        transition select(hdr.heartbeat.proto_id) {
+        packet.extract(hdr.heartBeat);
+        transition select(hdr.heartBeat.proto_id) {
             TYPE_IPV4: parse_ipv4;
             default: accept;
         }
@@ -110,9 +110,9 @@ control MyIngress(inout headers hdr,
 
 #    }
 
-    action multicast() {                         // multicast heartbeat to serving BSs
-        standard_metadata.mcast_grp = 1;
-    }
+   # action multicast() {                         // multicast heartbeat to serving BSs
+   #     standard_metadata.mcast_grp = 1;
+   # }
 
     action mac_forward(egressSpec_t port) {
         standard_metadata.egress_spec = port;
@@ -139,29 +139,33 @@ control MyIngress(inout headers hdr,
         default_action = drop();
     }
 
-    table heartbeat_exact {
-        key = {
-            hdr.ethernet.dstAddr : exact;
-        }
-        actions = {
-            multicast;
-            mac_forward;
-            drop;
-        }
-        size = 1024;
-        default_action = multicast;
-    }
+   # table heartbeat_exact {
+   #     key = {
+   #         hdr.ethernet.dstAddr : exact;
+   #     }
+   #     actions = {
+   #         multicast;
+   #         mac_forward;
+   #         drop;
+   #     }
+   #     size = 1024;
+   #     default_action = multicast;
+   # }
 
 
     apply {
-        if (hdr.ipv4.isValid() && !hdr.heartbeat.isValid()) {
+	if (hdr.ipv4.isValid()) {
             ipv4_lpm.apply();
         }
 
-        if (hdr.heartbeat.isValid()) {
-            // process heartbeat signal
-            heartbeat_exact.apply();
-        }
+        #if (hdr.ipv4.isValid() && !hdr.heartBeat.isValid()) {
+        #    ipv4_lpm.apply();
+        #}
+
+        #if (hdr.heartBeat.isValid()) {
+        #    // process heartbeat signal
+        #    heartbeat_exact.apply();
+        #}
     }
 }
 
@@ -222,6 +226,7 @@ control MyDeparser(packet_out packet, in headers hdr) {
 
     apply {
         packet.emit(hdr.ethernet);
+	packet.emit(hdr.heartBeat);
         packet.emit(hdr.ipv4);
     }
 }
