@@ -1,6 +1,6 @@
 ## Prerequisites 
 
-In order for this to work, we need to have installed p4 and the related dependencies. If you haven't already installed p4, you can use the instructions in https://github.com/jafingerhut/p4-guide to do so.
+In order for this to work, we need to have p4 installed  and the related dependencies. If you haven't already installed p4, you can use the instructions in https://github.com/jafingerhut/p4-guide to do so.
 
 After this is done, clone the present repo inside the folder tutorials/exercises that should have already been created.
 
@@ -22,6 +22,6 @@ To compile the p4 program:
  
  ```./send.py 10.0.1.1 "hello" ```
  
- Moreover, if you want to send a packet that contains a **heartbeat header**, at h1's terminal do isntead:
+ Moreover, if you want to send a packet that contains a **heartbeat header**, at h1's terminal do instead:
  
   ```./send.py 10.0.1.1 "hello" --dst_id 1```
