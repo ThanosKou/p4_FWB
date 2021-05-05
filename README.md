@@ -43,4 +43,6 @@ To test `dst_id` utility in the network, in h1's xterm do:
 
  ```./send.py 10.0.1.1 "hello" --dst_id %x```
  
- ,where `%x` is the desired dst_id.
+ , where `%x` is the desired dst_id.
+ 
+ For now, the buffering utlity at the secondary BS is simply dropping the received packets. Will update soon. 
