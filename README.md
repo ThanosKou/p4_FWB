@@ -29,7 +29,7 @@ To compile the p4 program:
  
  ```./send.py 10.0.1.1 "hello" ```
  
- To run `send.py` and `receive.py`, you nay need to do `chmod u+x send.py receive.py` beforehand.
+ To run `send.py` and `receive.py`, you may need to do `chmod u+x send.py receive.py` beforehand.
  
 The FWB operation is done by default. By specifying the dst_id in the packet that you send via `send.py` you can change the packet route. Specifically,
 
