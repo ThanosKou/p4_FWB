@@ -52,6 +52,17 @@
         "dstAddr": "08:00:00:00:02:22",
         "port": 3
       }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ipv4.dstAddr": ["10.0.2.2", 32],"hdr.heartBeat.dst_id": 3
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "dstAddr": "08:00:00:00:02:22",
+        "port": 3
+      }
     }
   ]
 }

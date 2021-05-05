@@ -113,6 +113,10 @@ control MyIngress(inout headers hdr,
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
     }
 
+    action buffer() {
+	mark_to_drop(standard_metadata);
+    }
+
     action multicast() {
         standard_metadata.mcast_grp = 1;
     }
@@ -125,29 +129,14 @@ control MyIngress(inout headers hdr,
         actions = {
             ipv4_forward;
 	    multicast;
+	    buffer;
             drop;
             NoAction;
         }
         size = 1024;
         default_action = drop();
     }
-/*
-    table heartBeat_process {
-	key = {
-	    hdr.ipv4.dstAddr: lpm;
-	    hdr.heartBeat.dst_id: exact;
-        }
-	actions = {
-	    ipv4_forward;
-	    drop;
-	    NoAction;
-        }
-        size = 1024;
-        default_action = drop();
-    }
-*/
- 
-    
+     
 /*
     apply {
         if (hdr.ipv4.isValid() && (!hdr.heartBeat.isValid() || hdr.heartBeat.dst_id == 0)) {
