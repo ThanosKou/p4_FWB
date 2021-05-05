@@ -124,6 +124,7 @@ control MyIngress(inout headers hdr,
         }
         actions = {
             ipv4_forward;
+	    multicast;
             drop;
             NoAction;
         }
