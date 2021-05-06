@@ -3,7 +3,7 @@
 #include <v1model.p4>
 
 const bit<16> TYPE_IPV4 = 0x800;
-const bit<16> TYPE_HEARTBEAT = 0x1212; // indicating heartbeat signal
+const bit<16> TYPE_FWB = 0x1212; // indicating fwb
 
 /*************************************************************************
 *********************** H E A D E R S  ***********************************
@@ -19,9 +19,10 @@ header ethernet_t {
     bit<16>   etherType;
 }
 
-header heartbeat_t {
+header fwb_t {
     bit<16> proto_id;
     bit<16> dst_id;
+    bit<32> pkt_id;
 }
 
 header ipv4_t {
@@ -45,7 +46,7 @@ struct metadata {
 
 struct headers {
     ethernet_t   ethernet;
-    heartbeat_t  heartBeat;
+    fwb_t        fwb;
     ipv4_t       ipv4;
 }
 
@@ -66,14 +67,14 @@ parser MyParser(packet_in packet,
         packet.extract(hdr.ethernet);
         transition select(hdr.ethernet.etherType) {
             TYPE_IPV4: parse_ipv4;
-            TYPE_HEARTBEAT: parse_heartbeat;
+            TYPE_FWB: parse_fwb;
             default: accept;
         }
     }
 
-    state parse_heartbeat {
-        packet.extract(hdr.heartBeat);
-        transition select(hdr.heartBeat.proto_id) {
+    state parse_fwb {
+        packet.extract(hdr.fwb);
+        transition select(hdr.fwb.proto_id) {
             TYPE_IPV4: parse_ipv4;
             default: accept;
         }
@@ -124,7 +125,7 @@ control MyIngress(inout headers hdr,
     table ipv4_lpm {
         key = {
 	    hdr.ipv4.dstAddr: lpm;
-	    hdr.heartBeat.dst_id: exact;
+	    hdr.fwb.dst_id: exact;
         }
         actions = {
             ipv4_forward;
@@ -135,21 +136,7 @@ control MyIngress(inout headers hdr,
         }
         size = 1024;
         default_action = drop();
-    }
-     
-/*
-    apply {
-        if (hdr.ipv4.isValid() && (!hdr.heartBeat.isValid() || hdr.heartBeat.dst_id == 0)) {
-            // Process only non-tunneled IPv4 packets
-            ipv4_lpm.apply();
-        }
-
-	if (hdr.heartBeat.dst_id != 0) {
-	    heartBeat_process.apply();
-	}       
-   } 
-
-*/
+    }     
 
     apply {
 	ipv4_lpm.apply();
@@ -199,7 +186,7 @@ control MyDeparser(packet_out packet, in headers hdr) {
 
     apply {
         packet.emit(hdr.ethernet);
-	packet.emit(hdr.heartBeat);
+	packet.emit(hdr.fwb);
         packet.emit(hdr.ipv4);
     }
 }
