@@ -8,7 +8,7 @@ from scapy.all import Packet, IPOption
 from scapy.all import ShortField, IntField, LongField, BitField, FieldListField, FieldLenField
 from scapy.all import IP, TCP, UDP, Raw
 from scapy.layers.inet import _IPOption_HDR
-from heartbeat_header import heartBeat
+from fwb_header import fwb
 
 def get_if():
     ifs=get_if_list()
@@ -23,7 +23,7 @@ def get_if():
     return iface
 
 def handle_pkt(pkt):
-    if heartBeat in pkt or (TCP in pkt and pkt[TCP].dport == 1234):
+    if fwb in pkt or (TCP in pkt and pkt[TCP].dport == 1234):
         print "got a packet"
         pkt.show2()
 #        hexdump(pkt)
