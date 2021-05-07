@@ -2,7 +2,7 @@
 
 This implements the FWB logic in the network shown in simple_topology.jpg.
 
-Specifically, Switch 1 (S1) plays the role of the FWB-GW. Switches 2 and 3 (S2 & S3) act as the primary and secondary BS of the UE, respectively. Switch 4 is a virtual switch and acts us a sink node for the UE.
+Specifically, Switch 1 (S1) plays the role of the FWB-GW. Switches 2 and 3 (S2 & S3) act as the primary and secondary BS of the UE, respectively. Switch 4 (S4) is a virtual switch and acts us a sink node for the UE.
 
 ## Prerequisites 
 
