@@ -50,3 +50,16 @@ To test `dst_id` utility in the network, in h1's xterm do:
  , where `%x` is the desired dst_id and `%y` is the desired pkt_id.
  
 For now, during multicast, the secondary BS receives the packet and stores it to its buffer (sends it to its associated host, using basic tunneling).
+
+
+
+## Sequencing Packets
+Simple sequencing mechanism but not working properly right now, I guess it is due to packet drops in mininet??
+To run,
+```
+xterm h1 h2
+
+$h2 python UE-host.py 10.0.1.1 mess1 --dst_id=0
+$h1 python core.py 10.0.2.2 mess2 --dst_id=0
+```
+
