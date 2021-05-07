@@ -62,7 +62,6 @@ def main():
     received_idx = 0
     while True:
         received_packet = sniff(iface = iface,  count=1)[0]
-        sleep(0.5)
         pkt_idx = received_packet[fwb].pkt_id
         # received_packet.show()
         if received_idx <  pkt_idx:
@@ -72,6 +71,7 @@ def main():
             # pkt = e / pkt_barebone
             # pkt.show()
             pkt.show()
+            sleep(0.2)
             sendp(pkt, iface=iface, verbose=False)
             # sleep(1)
 

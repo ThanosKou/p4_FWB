@@ -62,14 +62,14 @@ def main():
             # send a packet setting the pkt index sent+1 number of packets here using current_dst_id
             pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone
             # pkt.show()
+            sleep(0.2)
             sendp(pkt, iface=iface, verbose=False)
-            # pkt.show()
+            pkt.show()
             # sleep(1)
             sent_idx = sent_idx + 1
             incoming_packet = sniff(iface = iface, count=1)[0]
-            incoming_packet.show()
+            # incoming_packet.show()
             acked_idx = incoming_packet[fwb].pkt_id
-            sleep(0.5)
         incoming_packet = sniff(iface = iface, count=1)[0]
         incoming_packet.show()
         acked_idx = incoming_packet[fwb].pkt_id
