@@ -28,7 +28,7 @@ To compile the p4 program:
  To send a single packet you can use the scripts `send.py` and `receive.py`. For exmaple, if you want to send a single packet that contains the message "hello" from h1 to h2, do `./receive.py` at h2's terminal (you can sniff the incoming packets) and at h1's terminal do:
  
  ```./send.py 10.0.1.1 "hello" ```
- 
+ $
  To run `send.py` and `receive.py`, you may need to do `chmod u+x send.py receive.py` beforehand.
  
 The FWB operation is done by default. By specifying the dst_id in the packet that you send via `send.py` you can change the packet route. Specifically,
@@ -50,6 +50,16 @@ To test `dst_id` utility in the network, in h1's xterm do:
  , where `%x` is the desired dst_id and `%y` is the desired pkt_id.
  
 For now, during multicast, the secondary BS receives the packet and stores it to its buffer (sends it to its associated host, using basic tunneling).
+
+
+## Simple destination switching according to command sent from the UE
+The h1 updates its destination id with the help of listen and help script, which writes ue command to dst_holder.txt.
+```
+xterm h1 h1 h2
+$h1_1 ./reader_sender.py 10.0.2.2 message_load --dst_id=0
+$h1_2 ./listen_and_update.py
+$h2 ./send_single_pck.py 10.0.1.1 messageload --dst_id=new_dst_id
+```
 
 
 
