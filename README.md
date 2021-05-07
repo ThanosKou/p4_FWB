@@ -33,18 +33,20 @@ To compile the p4 program:
  
 The FWB operation is done by default. By specifying the dst_id in the packet that you send via `send.py` you can change the packet route. Specifically,
 
-```dst_id = 0 => multicast (BS1 is primary, S3 is secondary)```
+```dst_id = 0 => multicast (S2 is primary, S3 is secondary)```
 
-```dst_id = 1 => S2 is primary, S3-UE link is down```
+```dst_id = 1 => multicast (S3 is primary, S2 is secondary)```
 
-```dst_id = 2 => S3 is primary, S2-UE link is down```
+```dst_id = 2 => S2 is primary, S3-UE link is down```
 
-```dst_id = 3 => both S2-UE and S3-UE links are down```
+```dst_id = 3 => S3 is primary, S2-UE link is down```
+
+```dst_id = 4 => both S2-UE and S3-UE links are down```
 
 To test `dst_id` utility in the network, in h1's xterm do:
 
- ```./send.py 10.0.1.1 "hello" --dst_id %x```
+ ```./send.py 10.0.1.1 "hello" --dst_id %x --pkt_id %y```
  
- , where `%x` is the desired dst_id.
+ , where `%x` is the desired dst_id and `%y` is the desired pkt_id.
  
- For now, the buffering utlity at the secondary BS is simply dropping the received packets. Will update soon. 
+For now, during multicast, the secondary BS receives the packet and stores it to its buffer (sends it to its associated host, using basic tunneling).
