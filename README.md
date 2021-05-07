@@ -73,3 +73,15 @@ $h2 python UE-host.py 10.0.1.1 mess1 --dst_id=0
 $h1 python core.py 10.0.2.2 mess2 --dst_id=0
 ```
 
+
+
+
+## Changing Primary to secondary
+UE is the decision mechanism here: simply we implemented a critical pkt_id when this pkt_id is observed the ue will send a primary change request to BS1. Then BS1 will send packets in its buffer to the UE and notify the core. To reproduce:
+```
+echo 1 > dst_holder.txt
+@h1 ./listen_and_update.py
+@h2 ./UE-listener.py
+@h3 ./BS1.py
+@h1 ./reader_sender.py --dst_id=1
+```

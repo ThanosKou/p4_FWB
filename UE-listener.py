@@ -7,6 +7,7 @@ import struct
 import argparse
 import time
 from time import sleep
+import os
 
 from scapy.all import sendp, send, get_if_list, get_if_hwaddr, hexdump
 from scapy.all import Packet
@@ -32,30 +33,49 @@ def get_if():
         exit(1)
     return iface
 
+## We can randomize this function later on for various cases
+def change_primary(prev_dst):
+    next_dst = prev_dst
+    if prev_dst == 0:
+        next_dst = 3
+    return next_dst, next_event_packet
+
+
+
+
+
 
 def handle_pkt(pkt):
     # pkt.show()
+    global last_received
     if fwb in pkt:
-        # print(pkt[fwb].pkt_id)
-        return pkt[fwb].pkt_id
+        if pkt[IP].dst == '10.0.2.2':
+            last_received = pkt[fwb].pkt_id
+            print(last_received)
+            if last_received == 30:
+                next_dst = 2
+                notification_pkt = e / fwb(dst_id=next_dst,
+                 pkt_id=last_received+1, pid=TYPE_IPV4) / IP(dst='10.0.3.3') / pkt_barebone
+                notification_pkt.show()
+                sendp(notification_pkt, iface=iface, verbose=False)
+
+
+
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('ip_addr', type=str, help="The destination IP address to use")
-    parser.add_argument('message', type=str, help="The message to include in packet")
-    parser.add_argument('--dst_id', type=int, default=None, help='The heartBeat dst_id to use, if unspecified then heartbeat header will not be included in packet')
-    args = parser.parse_args()
-
-    addr = socket.gethostbyname(args.ip_addr)
-    dst_id = args.dst_id
-    iface = get_if()
-
+    global iface
+    ifaces = filter(lambda i: 'eth0' in i, os.listdir('/sys/class/net/'))
+    iface = ifaces[0]
+    print "UE listening: using %s" % iface
+    global e
+    global last_received
+    global pkt_barebone
     e =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff', type=TYPE_FWB)
-    pkt_barebone = IP(dst=addr) / TCP(dport=1111, sport=51995) / args.message
-    pkt = e / fwb(dst_id=dst_id, pkt_id=0, pid=TYPE_IPV4) /  pkt_barebone
-    pkt.show()
-    sendp(pkt, iface=iface, verbose=False)
+    pkt_barebone =  TCP(dport=1111, sport=51995) / 'Primary change'
+    last_received=-1
+    received_packet = sniff(iface = iface,  prn = lambda x : handle_pkt(x))
+
 
 
 

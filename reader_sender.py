@@ -12,7 +12,7 @@ from scapy.all import sendp, send, get_if_list, get_if_hwaddr, hexdump
 from scapy.all import Packet
 from scapy.all import Ether, IP, UDP, TCP
 from fwb_header import fwb
-from fwb_header import TYPE_FWB,TYPE_IPV4,TYPE_FWB_ACK
+from fwb_header import TYPE_FWB,TYPE_IPV4
 
 from scapy.all import sniff, sendp, hexdump, get_if_list, get_if_hwaddr
 from scapy.all import Packet, IPOption
@@ -42,8 +42,8 @@ def handle_pkt(pkt):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('ip_addr', type=str, help="The destination IP address to use")
-    parser.add_argument('message', type=str, help="The message to include in packet")
+    parser.add_argument('--ip_addr', type=str, default='10.0.2.2',help="The destination IP address to use")
+    parser.add_argument('--message', type=str, default='From h1 to h2',help="The message to include in packet")
     parser.add_argument('--dst_id', type=int, default=None, help='The heartBeat dst_id to use, if unspecified then heartbeat header will not be included in packet')
     args = parser.parse_args()
 
@@ -65,7 +65,7 @@ def main():
         sent_idx = sent_idx + 1
         pkt.show()
         sendp(pkt, iface=iface, verbose=False)
-        sleep(0.2)
+        # sleep(0.001)
 
 
         # while sent_idx < (acked_idx + 10):

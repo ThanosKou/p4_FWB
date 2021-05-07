@@ -14,7 +14,7 @@ from scapy.all import sendp, send, get_if_list, get_if_hwaddr, hexdump
 from scapy.all import Packet
 from scapy.all import Ether, IP, UDP, TCP
 from fwb_header import fwb
-from fwb_header import TYPE_FWB,TYPE_IPV4,TYPE_FWB_ACK
+from fwb_header import TYPE_FWB,TYPE_IPV4
 
 from scapy.all import sniff, sendp, hexdump, get_if_list, get_if_hwaddr
 from scapy.all import Packet, IPOption
