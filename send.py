@@ -33,10 +33,11 @@ def main():
 
     addr = socket.gethostbyname(args.ip_addr)
     dst_id = args.dst_id
+    pkt_id = args.pkt_id
     iface = get_if()
 
     if (dst_id is not None):
-        print "sending on interface {} to dst_id {}".format(iface, str(dst_id))
+        print "sending on interface {} to dst_id {} with pkt_id {}".format(iface, str(dst_id),str(pkt_id))
         pkt =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff')
         pkt = pkt / fwb(dst_id=dst_id, pkt_id=pkt_id) / IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535)) / args.message
     else:

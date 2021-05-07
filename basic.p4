@@ -114,8 +114,8 @@ control MyIngress(inout headers hdr,
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
     }
 
-    action buffer() {
-	mark_to_drop(standard_metadata);
+    action buffer(egressSpec_t port) {
+        standard_metadata.egress_spec = port;
     }
 
     action multicast() {
