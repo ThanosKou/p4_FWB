@@ -85,3 +85,11 @@ echo 1 > dst_holder.txt
 @h3 ./BS1.py
 @h1 ./reader_sender.py --dst_id=1
 ```
+
+
+## UPDATE bootstrap:
+Now it runs the same as the protocol. Mininet uses a bootstrapt script. Only need to run 
+```
+@h2 ./UE-listener.py
+@h1 ./reader_sender.py
+```

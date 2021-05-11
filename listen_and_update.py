@@ -37,17 +37,32 @@ def get_if():
 
 def handle_pkt(pkt):
     # pkt.show()
-    if fwb in pkt and pkt[fwb].pkt_id==0:
-        f = open("/home/mfo254/tutorials/exercises/p4_FWB/dst_holder.txt", "w")
-        f.write(str(pkt[fwb].dst_id))
+    if fwb in pkt and pkt[TCP].dport==2222 and pkt[TCP].sport!= 3333: # 2222 is control tcp ports
+        # pkt.show()
+        f = open("/home/mfo254/tutorials/exercises/p4_FWB/dst_holder.txt", "r")
+        prev_dst = f.read() #update the multicast tree
+        prev_dst = int(prev_dst)
         f.close()
-        # return pkt[fwb].dst_id
+        # print('reached hereeee')
+        f = open("/home/mfo254/tutorials/exercises/p4_FWB/dst_holder.txt", "w")
+        f.write(str(pkt[fwb].dst_id)+'\n') #update the multicast tree
+        f.close()
+        # send control acknowledge to the origin of the packet
+        notification_pkt = e / fwb(dst_id=prev_dst,
+                 pkt_id=0, pid=TYPE_IPV4) / IP(dst='10.0.2.2') / pkt_control_bbone
+        # notification_pkt.show()
+        sendp(notification_pkt, iface=iface, verbose=False)
 
 
 def main():
+    global iface
     ifaces = filter(lambda i: 'eth' in i, os.listdir('/sys/class/net/'))
     iface = ifaces[0]
     print "sniffing on %s" % iface
+    global e
+    global pkt_control_bbone
+    e =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff', type=TYPE_FWB)
+    pkt_control_bbone =  TCP(dport=2222, sport=3333) / 'Confirming the change'
 
     # while True:
         # received_packet = sniff(iface = iface,  count=1)[0]

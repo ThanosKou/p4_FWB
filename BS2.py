@@ -25,21 +25,21 @@ from scapy.layers.inet import _IPOption_HDR
 
 
 
-def BS_1_dst_id_map(dst_id):
+def BS_2_dst_id_map(dst_id):
     my_role = 'nothing'
     if dst_id == 0:
-        my_role = 'primary'
-    elif dst_id == 1:
         my_role = 'secondary'
-    elif dst_id == 2:
+    elif dst_id == 1:
+        my_role = 'primary'
+    elif dst_id == 3:
         my_role = 'primary'
     return my_role
 
 
 def buffer_pkt_fwd(buffer_pkt):
     fwd_pkt = buffer_pkt
-    fwd_pkt[fwb].dst_id = 2
-    fwd_pkt[IP].src = '10.0.3.3'
+    fwd_pkt[fwb].dst_id = 3
+    fwd_pkt[IP].src = '10.0.4.4'
     return fwd_pkt
    
 
@@ -47,7 +47,7 @@ def buffer_pkt_extract(my_buffer,ue_asks):
     global iface
     to_send = [_ for _ in my_buffer if _ >= ue_asks]
     for idx in to_send:
-        buff_pkt = e / fwb(dst_id=2, pkt_id=idx, pid=TYPE_IPV4)/ pkt_barebone
+        buff_pkt = e / fwb(dst_id=3, pkt_id=idx, pid=TYPE_IPV4)/ pkt_barebone
         sendp(buff_pkt, iface=iface, verbose=False)
 
 
@@ -70,12 +70,12 @@ def handle_pkt(pkt):
             ue_asks = pkt[fwb].pkt_id
             buffer_pkt_extract(my_buffer,ue_asks)
             # notify the core w listen and update mechanism
-            notification_pkt = e / fwb(dst_id=2,pkt_id=0,
-                pid=TYPE_IPV4)/IP(dst='10.0.1.1')/ TCP(dport=2222, sport=51995) / 'Notifying h1 (GW), BS1 is primary now Changed at packet idx {}'.format(ue_asks)
+            notification_pkt = e / fwb(dst_id=3, pkt_id=0,
+                pid=TYPE_IPV4)/IP(dst='10.0.1.1')/ TCP(dport=2222, sport=51995) / 'Notifying h1 (GW), BS2 is primary now Changed at packet idx {}'.format(ue_asks)
             sendp(notification_pkt,iface=iface,verbose=False)
             # notification_pkt.show()
         elif pkt[IP].src =='10.0.1.1' and pkt[TCP].dport==1111: #received data packet
-            current_state = BS_1_dst_id_map(pkt[fwb].dst_id)
+            current_state = BS_2_dst_id_map(pkt[fwb].dst_id)
             if current_state == 'secondary':
                 pkt_idx = pkt[fwb].pkt_id
                 my_buffer[w_idx] = pkt_idx
@@ -94,7 +94,7 @@ def handle_pkt(pkt):
                 print('Somehting is wrong we shouldnt reach here')
         elif pkt[IP].src=='10.0.1.1' and pkt[TCP].dport==2222: #control packet
             isTransition = False
-
+            
         # f = open("/home/mfo254/tutorials/exercises/p4_FWB/dst_holder.txt", "w")
 
         # f.write(str(pkt[fwb].dst_id))

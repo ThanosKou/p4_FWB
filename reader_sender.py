@@ -52,7 +52,7 @@ def main():
     iface = get_if()
 
     e =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff', type=TYPE_FWB)
-    pkt_barebone = IP(dst=addr) / TCP(dport=1234, sport=51995) / args.message
+    pkt_barebone = IP(dst=addr) / TCP(dport=1111, sport=51995) / args.message
             
     current_dst_id = 0
     acked_idx = 0
@@ -61,9 +61,12 @@ def main():
         f = open("/home/mfo254/tutorials/exercises/p4_FWB/dst_holder.txt", "r")
         dst_id = int(f.read())
         f.close()
+        if dst_id == 4:
+            sleep(1)
+            continue
         pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone
         sent_idx = sent_idx + 1
-        pkt.show()
+        # pkt.show()
         sendp(pkt, iface=iface, verbose=False)
         # sleep(0.001)
 
