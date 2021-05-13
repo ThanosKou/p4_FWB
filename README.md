@@ -1,10 +1,10 @@
-## Description
+# Description
 
 This implements the FWB logic in the network shown in simple_topology.jpg.
 
 Specifically, Switch 1 (S1) plays the role of the FWB-GW. Switches 2 and 3 (S2 & S3 including their hosts h3 & h4, respectively) act as the primary and secondary BS of the UE, respectively. Switch 4 (S4) is a virtual switch and acts us a sink node for the UE.
 
-## Prerequisites 
+# Prerequisites 
 
 In order for this to work, we need to have p4 installed  and the related dependencies. If you haven't already installed p4, you can use the instructions in https://github.com/jafingerhut/p4-guide to do so.
 
@@ -21,7 +21,7 @@ git clone https://github.com/ThanosKou/p4_FWB
 If you are not interested in bmv2 performance but just want to run the experiment the easiest way would be using the VM image provided in [p4lang/tutorials](https://github.com/p4lang/tutorials), following their instructions.
 
 
-## Run this exercise 
+# Run this exercise 
 We provide a mininet [bootstrap script](https://github.com/ThanosKou/p4_FWB/blob/main/init_script.sh) that runs the programs, the BS logic, GW logic and UE logic, in their respective hosts. Moreover this bootstrap creates the mininet topology, applies the forwarding rules to our p4 switches.
 To run a specific delay scenario change links at the [topology](https://github.com/ThanosKou/p4_FWB/blob/main/pod-topo/topology.json) file, and edit the latencies, in ms units.
 
@@ -33,7 +33,7 @@ cp ./run_exercise.py ../../utils/run_exercise.py
 We also provided a init script for 3GPP, to run 3GPP scenario simply change the lines 358 and 359 at this script. (uncomment and comment).
 
 
-### Running the experiments
+## Running the experiments
 Now that we cleared all the prerequisites, dependencies and folder setup, we can run our first experiment.
 Adjust the link delays, [topology](https://github.com/ThanosKou/p4_FWB/blob/main/pod-topo/topology.json), and simply run:
 ```
@@ -45,4 +45,4 @@ Now we can change the link delays, [topology](https://github.com/ThanosKou/p4_FW
 
 
 
-## Results
+# Results
