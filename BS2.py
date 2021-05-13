@@ -37,17 +37,19 @@ def BS_2_dst_id_map(dst_id):
 
 
 def buffer_pkt_fwd(buffer_pkt):
+    global current_dst_id
     fwd_pkt = buffer_pkt
-    fwd_pkt[fwb].dst_id = 3
+    fwd_pkt[fwb].dst_id = current_dst_id
     fwd_pkt[IP].src = '10.0.4.4'
     return fwd_pkt
    
 
 def buffer_pkt_extract(my_buffer,ue_asks):
     global iface
+    global current_dst_id
     to_send = [_ for _ in my_buffer if _ >= ue_asks]
     for idx in to_send:
-        buff_pkt = e / fwb(dst_id=3, pkt_id=idx, pid=TYPE_IPV4)/ pkt_barebone
+        buff_pkt = e / fwb(dst_id=current_dst_id, pkt_id=idx, pid=TYPE_IPV4)/ pkt_barebone
         sendp(buff_pkt, iface=iface, verbose=False)
 
 
@@ -60,6 +62,7 @@ def handle_pkt(pkt):
     global my_buffer
     global w_idx
     global BUFFER_LEN
+    global current_dst_id
     if fwb in pkt:
         if pkt[IP].src == '10.0.2.2' and pkt[TCP].dport==2222: #control packet
             # print('UE is asking for packets')
@@ -67,11 +70,12 @@ def handle_pkt(pkt):
             # print(my_buffer[w_idx-1])
             # send the next packets to UE
             isTransition = True
+            current_dst_id = pkt[fwb].dst_id
             ue_asks = pkt[fwb].pkt_id
             buffer_pkt_extract(my_buffer,ue_asks)
             # notify the core w listen and update mechanism
-            notification_pkt = e / fwb(dst_id=3, pkt_id=0,
-                pid=TYPE_IPV4)/IP(dst='10.0.1.1')/ TCP(dport=2222, sport=51995) / 'Notifying h1 (GW), BS2 is primary now Changed at packet idx {}'.format(ue_asks)
+            notification_pkt = e / fwb(dst_id=pkt[fwb].dst_id, pkt_id=0,
+                pid=TYPE_IPV4)/IP(dst='10.0.1.1')/ TCP(dport=2222, sport=50004) / 'Notifying h1 (GW), BS2 is primary now Changed at packet idx {}'.format(ue_asks)
             sendp(notification_pkt,iface=iface,verbose=False)
             # notification_pkt.show()
         elif pkt[IP].src =='10.0.1.1' and pkt[TCP].dport==1111: #received data packet
@@ -86,7 +90,7 @@ def handle_pkt(pkt):
                     current_state = 'primary'
                     #send whatever i received in my buffer to UE:
                     sendp(fwd_pkt,iface=iface,verbose=False)
-                    # fwd_pkt.show()
+                    fwd_pkt.show()
                 # print(my_buffer[w_idx-1])
             else:
                 pkt.show()
@@ -94,7 +98,8 @@ def handle_pkt(pkt):
                 print('Somehting is wrong we shouldnt reach here')
         elif pkt[IP].src=='10.0.1.1' and pkt[TCP].dport==2222: #control packet
             isTransition = False
-            
+            current_dst_id = pkt[fwb].dst_id
+
         # f = open("/home/mfo254/tutorials/exercises/p4_FWB/dst_holder.txt", "w")
 
         # f.write(str(pkt[fwb].dst_id))
@@ -110,8 +115,10 @@ def main():
     global e
     global last_received
     global pkt_barebone
+    global current_dst_id
+    current_dst_id = 1
     e =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff', type=TYPE_FWB)
-    pkt_barebone =  IP(dst='10.0.2.2') / TCP(dport=1111, sport=51995) / 'Depleting Buffer'
+    pkt_barebone =  IP(dst='10.0.2.2') / TCP(dport=1111, sport=50004) / 'Depleting Buffer'
     global BUFFER_LEN
     global my_buffer
     global w_idx
