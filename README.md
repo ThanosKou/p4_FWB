@@ -46,3 +46,6 @@ Now we can change the link delays, [topology](https://github.com/ThanosKou/p4_FW
 
 
 # Results
+To compile all the results into a dataframe and plot the results, simply change the data_path variable to point to your datafolder in python [script](https://github.com/ThanosKou/p4_FWB/blob/main/data_analysis/main.py) on lines 54-55 and uncomment. This will create the dataframe, and plot the packet arrival times.
+Below is the results of our experiment.
+>![Figure_1](https://github.com/ThanosKou/p4_FWB/blob/main/data_analysis/Figure_1_gw_only.png) **Figure 1:** Paket arrival times relative to the first packet arrival of the flow, i.e., first packet arrival time is shifted to zero. The gateway delay is a significant source of inter-packet latency which will jepoardize the quality of experience of low latency applications. Our proposed method hides the handover latency from the UE by prefetching packets to a secondary backup base station. The staircase behaivour in 3GPP is due to the additional latency introduced while fetching the packets from the GW during a handover event.
