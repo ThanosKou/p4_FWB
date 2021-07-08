@@ -58,25 +58,25 @@ def handle_pkt(pkt):
     global t0
     if fwb in pkt:
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
-            # last_received = pkt[fwb].pkt_id
-            if last_received + 1 == pkt[fwb].pkt_id:
-                if pkt[fwb].dst_id in a_m_idx[prev_dst]:
-                    last_received = pkt[fwb].pkt_id
-                    print('{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
-                    recording_file.write('{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
-                    if last_received >= 2000:
-                        print('Done')
-                        exit()
-                if last_received == event_idx:
-                    last_received = pkt[fwb].pkt_id
-                    next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
-                    print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
-                    event_idx = random.randint(20,30) + last_received
-                    notification_pkt = update_multicast(prev_dst,next_dst,last_received)
-                    sendp(notification_pkt, iface=iface, verbose=False)
-                    prev_dst = next_dst
-            else:
-                pkt.show()
+            last_received = pkt[fwb].pkt_id
+            # if last_received + 1 == pkt[fwb].pkt_id:
+            if pkt[fwb].dst_id in a_m_idx[prev_dst]:
+                last_received = pkt[fwb].pkt_id
+                print('{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
+                recording_file.write('{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
+                if last_received >= 2000:
+                    print('Done')
+                    exit()
+            if last_received == event_idx:
+                last_received = pkt[fwb].pkt_id
+                next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
+                print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
+                event_idx = random.randint(20,30) + last_received
+                notification_pkt = update_multicast(prev_dst,next_dst,last_received)
+                sendp(notification_pkt, iface=iface, verbose=False)
+                prev_dst = next_dst
+            # else:
+                # pkt.show()
                 # sleep(200)
 
 
