@@ -61,17 +61,19 @@ def handle_pkt(pkt):
     if fwb in pkt:
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
 	    generated_time = bytes(pkt[TCP].payload)
-            last_received = pkt[fwb].pkt_id
+            #last_received = pkt[fwb].pkt_id
+	    last_received = np.max(received_packets)
             # if last_received + 1 == pkt[fwb].pkt_id:
-            if last_received not in received_packets:
-                print('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
-                recording_file.write('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
-                received_packets.append(last_received)
+            if pkt[fwb].pkt_id not in received_packets:
+                print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
+                recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
+                received_packets.append(pkt[fwb].pkt_id)
+	        last_received = np.max(received_packets)
                 if last_received >= 2000:
                     print('Done')
                     exit()
             if last_received == event_idx:
-                last_received = pkt[fwb].pkt_id
+                #last_received = pkt[fwb].pkt_id
                 next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
                 print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
                 event_idx = random.randint(20,30) + last_received
