@@ -65,6 +65,7 @@ def handle_pkt(pkt):
 	    last_received = np.max(received_packets)
             # if last_received + 1 == pkt[fwb].pkt_id:
             if pkt[fwb].pkt_id not in received_packets:
+# 		if condition about a_m_index - > foor a given ue state(prev_dst) check if prev_dst primary is correct for received packet dst.
                 print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
                 recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
                 received_packets.append(pkt[fwb].pkt_id)
@@ -72,6 +73,9 @@ def handle_pkt(pkt):
                 if last_received >= 2000:
                     print('Done')
                     exit()
+# 		else of am index:
+# 			observe packets coming here and why.
+# 			these packets here are coming from previous primary bs which supposed to be blocked.
             if last_received == event_idx:
                 #last_received = pkt[fwb].pkt_id
                 next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
