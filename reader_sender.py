@@ -41,9 +41,11 @@ def handle_pkt(pkt):
 
 
 def main():
+    global t0
+    t0 = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument('--ip_addr', type=str, default='10.0.2.2',help="The destination IP address to use")
-    parser.add_argument('--message', type=str, default='From h1 to h2',help="The message to include in packet")
+    parser.add_argument('--message', type=str, default='',help="The message to include in packet")
     parser.add_argument('--dst_id', type=int, default=None, help='The heartBeat dst_id to use, if unspecified then heartbeat header will not be included in packet')
     args = parser.parse_args()
 
@@ -58,16 +60,16 @@ def main():
     acked_idx = 0
     sent_idx = 0
     while True:
-        f = open("/home/mfo254/tutorials/exercises/p4_FWB/dst_holder.txt", "r")
+        f = open("/home/thanos/p4_new/tutorials/exercises/p4_FWB/dst_holder.txt", "r")
         dst_id = int(f.read())
         f.close()
         if dst_id == 4:
             sleep(1)
             continue
-        pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone
+        pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(time.time()-t0)
         sent_idx = sent_idx + 1
         # pkt.show()
-        sendp(pkt, iface=iface, verbose=False)
+        sendp(pkt, inter = 0.01, iface=iface, verbose=False)
         # sleep(0.001)
 
 

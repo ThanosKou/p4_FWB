@@ -39,13 +39,15 @@ def handle_pkt(pkt):
     # pkt.show()
     if fwb in pkt and pkt[TCP].dport==2222 and pkt[TCP].sport!= 3333: # 2222 is control tcp ports
         # pkt.show()
-        f = open("/home/mfo254/tutorials/exercises/p4_FWB/dst_holder.txt", "r")
-        prev_dst = f.read() #update the multicast tree
-        prev_dst = int(prev_dst)
+        f = open("/home/thanos/p4_new/tutorials/exercises/p4_FWB/dst_holder.txt", "r")
+        line = f.read()
+        prev_dst = int(line.split()[0])
+        acked_idx = int(line.split()[1])
         f.close()
         # print('reached hereeee')
-        f = open("/home/mfo254/tutorials/exercises/p4_FWB/dst_holder.txt", "w")
-        f.write(str(pkt[fwb].dst_id)+'\n') #update the multicast tree
+        f = open("/home/thanos/p4_new/tutorials/exercises/p4_FWB/dst_holder.txt", "w")
+        write_string = '{} {}\n'.format(pkt[fwb].dst_id,pkt[fwb].pkt_id)
+        f.write(write_string) #update the multicast tree
         f.close()
         # send control acknowledge to the origin of the packet
         notification_pkt = e / fwb(dst_id=prev_dst,

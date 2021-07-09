@@ -56,14 +56,17 @@ def handle_pkt(pkt):
     global prev_dst
     global recording_file
     global t0
+    global received_packets
+
     if fwb in pkt:
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
+	    generated_time = bytes(pkt[TCP].payload)
             last_received = pkt[fwb].pkt_id
             # if last_received + 1 == pkt[fwb].pkt_id:
-            if pkt[fwb].dst_id in a_m_idx[prev_dst]:
-                last_received = pkt[fwb].pkt_id
-                print('{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
-                recording_file.write('{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
+            if last_received not in received_packets:
+                print('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
+                recording_file.write('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
+                received_packets.append(last_received)
                 if last_received >= 2000:
                     print('Done')
                     exit()
@@ -97,14 +100,14 @@ def main():
     #     prev_dst = f.read() #update the multicast tree
     #     prev_dst = int(prev_dst)
     #     f.close()
-    topo_file = "/home/mfo254/tutorials/exercises/p4_FWB/pod-topo/topology.json"
+    topo_file = "/home/thanos/p4_new/tutorials/exercises/p4_FWB/pod-topo/topology.json"
     with open(topo_file, 'r') as f:
         topo = json.load(f)
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
-    record_string = '/home/mfo254/tutorials/exercises/p4_FWB/out_data/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    record_string = '/home/thanos/p4_new/tutorials/exercises/p4_FWB/out_data/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
-    recording_file.write('PacketSeqNo,ArrivalTime,MulticastIdx\n')
+    recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 
 
     ifaces = filter(lambda i: 'eth0' in i, os.listdir('/sys/class/net/'))
@@ -115,6 +118,8 @@ def main():
     global last_received
     global pkt_control_bbone
     global prev_dst
+    global received_packets
+    received_packets = []
     prev_dst = 1 #always start with case 1
     e =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff', type=TYPE_FWB)
     pkt_control_bbone =  TCP(dport=2222, sport=50002) / 'Primary change'
