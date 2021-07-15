@@ -54,8 +54,8 @@ def handle_pkt(pkt):
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
             if pkt[fwb].dst_id in a_m_idx[prev_dst]:
                 last_received = pkt[fwb].pkt_id
-                print('{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
-                recording_file.write('{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
+                print('{},{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
+                recording_file.write('{},{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
                 if last_received >= 2000:
                     print('Done')
                     exit()
@@ -64,7 +64,7 @@ def handle_pkt(pkt):
             if last_received == event_idx:
                 next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
                 print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
-                event_idx = random.randint(20,30) + last_received
+                event_idx = random.randint(50,60) + last_received
                 notification_pkt = update_multicast(prev_dst,next_dst,last_received)
                 sendp(notification_pkt, iface=iface, verbose=False)
                 prev_dst = next_dst
@@ -90,12 +90,12 @@ def main():
     #     prev_dst = f.read() #update the multicast tree
     #     prev_dst = int(prev_dst)
     #     f.close()
-    topo_file = "/home/mfo254/tutorials/exercises/p4_FWB/pod-topo/topology.json"
+    topo_file = "/home/thanos/tutorials/exercises/p4_FWB/pod-topo/topology.json"
     with open(topo_file, 'r') as f:
         topo = json.load(f)
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
-    record_string = '/home/mfo254/tutorials/exercises/p4_FWB/out_data/3gpp_pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/3gpp_pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
     recording_file.write('PacketSeqNo,ArrivalTime,MulticastIdx\n')
 

@@ -60,7 +60,7 @@ def main():
     acked_idx = 0
     sent_idx = 0
     while True:
-        f = open("/home/mfo254/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "r")
+        f = open("/home/thanos/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "r")
         line = f.read()
         dst_id = int(line.split()[0])
         acked_idx = int(line.split()[1])
