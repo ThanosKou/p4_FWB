@@ -48,7 +48,7 @@ def buffer_pkt_extract(my_buffer,ue_asks):
     global iface
     global current_dst_id
     to_send = [_ for _ in my_buffer if _ >= ue_asks]
-    for idx in to_send:
+    for idx in sorted(to_send):
         buff_pkt = e / fwb(dst_id=current_dst_id, pkt_id=idx, pid=TYPE_IPV4)/ pkt_barebone
         sendp(buff_pkt, iface=iface, verbose=False)
 
@@ -89,7 +89,7 @@ def handle_pkt(pkt):
                     # fwd_pkt.show()
                     current_state = 'primary'
                     #send whatever i received in my buffer to UE:
-                    sendp(fwd_pkt,iface=iface,verbose=False)
+                    sendp(fwd_pkt,inter = 0.1,iface=iface,verbose=False)
                     fwd_pkt.show()
                 # print(my_buffer[w_idx-1])
             else:
