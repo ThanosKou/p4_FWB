@@ -52,11 +52,12 @@ def handle_pkt(pkt):
     global t0
     if fwb in pkt:
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
+	    generated_time = bytes(pkt[TCP].payload)
             if pkt[fwb].dst_id in a_m_idx[prev_dst]:
                 last_received = pkt[fwb].pkt_id
-                print('{},{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
-                recording_file.write('{},{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
-                if last_received >= 2000:
+                print('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
+                recording_file.write('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
+                if last_received >= 4000:
                     print('Done')
                     exit()
                 # print('{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
@@ -64,7 +65,7 @@ def handle_pkt(pkt):
             if last_received == event_idx:
                 next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
                 print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
-                event_idx = random.randint(50,60) + last_received
+                event_idx = random.randint(38,42) + last_received
                 notification_pkt = update_multicast(prev_dst,next_dst,last_received)
                 sendp(notification_pkt, iface=iface, verbose=False)
                 prev_dst = next_dst
@@ -80,7 +81,7 @@ def main():
     global a_m_idx
     # transitions = [[2,3],[2,3],[0,4],[1,4],[2,3]]
     transitions = [[2,3],[2,3],[0],[1],[2,3]]
-    event_idx = random.randint(25,50)
+    event_idx = random.randint(38,42)
     a_m_idx = [[0,2],[1,3],[2,0],[3,1],[2,3]] # acceptable multicast ...
     #destinations for a prev_dst, for example adding a secondary bs or removing the secondary bs should still be valid even if prev_dst is different
     global recording_file
@@ -95,9 +96,9 @@ def main():
         topo = json.load(f)
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
-    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/3gpp_pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/realistic_loss/3gpp_pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
-    recording_file.write('PacketSeqNo,ArrivalTime,MulticastIdx\n')
+    recording_file.write('PacketSeqNo,GeneratingTime,ArrivalTime,MulticastIdx\n')
 
 
     ifaces = filter(lambda i: 'eth0' in i, os.listdir('/sys/class/net/'))

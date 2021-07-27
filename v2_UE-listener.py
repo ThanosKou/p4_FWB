@@ -42,7 +42,7 @@ def update_multicast(prev_dst, next_dst, last_received):
         #If starts to use bs2 as primary, notify BS2
         pkt_ip_layer = IP(dst='10.0.4.4')
     elif prev_dst == 1 and next_dst == 2:
-        #If starts to use bs1 as primary, notify BS1
+        #If starts to use bs2 as primary, notify BS2
         pkt_ip_layer = IP(dst='10.0.3.3')
     ctrl_pkt = e / pkt_fwb_layer / pkt_ip_layer / pkt_control_bbone
     return ctrl_pkt
@@ -62,17 +62,21 @@ def handle_pkt(pkt):
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
 	    generated_time = bytes(pkt[TCP].payload)
             #last_received = pkt[fwb].pkt_id
-	    last_received = np.max(received_packets)
+	    if received_packets:
+	    	last_received = np.max(received_packets)
+	    else:
+		last_received = 0
             # if last_received + 1 == pkt[fwb].pkt_id:
-            if pkt[fwb].pkt_id not in received_packets:
+            #if pkt[fwb].dst_id in a_m_idx[prev_dst]:
+	    if pkt[fwb].pkt_id not in received_packets:
 # 		if condition about a_m_index - > foor a given ue state(prev_dst) check if prev_dst primary is correct for received packet dst.
-                print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
-                recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
-                received_packets.append(pkt[fwb].pkt_id)
-	        last_received = np.max(received_packets)
-                if last_received >= 2000:
-                    print('Done')
-                    exit()
+            	print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
+		recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
+            	received_packets.append(pkt[fwb].pkt_id)
+	    	last_received = np.max(received_packets)
+            	if last_received >= 4000:
+                	print('Done')
+                	exit()
 # 		else of am index:
 # 			observe packets coming here and why.
 # 			these packets here are coming from previous primary bs which supposed to be blocked.
@@ -80,7 +84,8 @@ def handle_pkt(pkt):
                 #last_received = pkt[fwb].pkt_id
                 next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
                 print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
-                event_idx = random.randint(20,30) + last_received
+                event_idx = random.randint(38,42) + last_received
+		#recording_file.write('{},{}\n'.format(last_received,time.time()-t0))
                 notification_pkt = update_multicast(prev_dst,next_dst,last_received)
                 sendp(notification_pkt, iface=iface, verbose=False)
                 prev_dst = next_dst
@@ -96,7 +101,7 @@ def main():
     global a_m_idx
     # transitions = [[2,3],[2,3],[0,4],[1,4],[2,3]]
     transitions = [[2,3],[2,3],[0],[1],[2,3]]
-    event_idx = random.randint(25,50)
+    event_idx = random.randint(38,42)
     a_m_idx = [[0,2],[1,3],[2,0],[3,1],[2,3]] # acceptable multicast ...
     #destinations for a prev_dst, for example adding a secondary bs or removing the secondary bs should still be valid even if prev_dst is different
     global recording_file
@@ -106,12 +111,12 @@ def main():
     #     prev_dst = f.read() #update the multicast tree
     #     prev_dst = int(prev_dst)
     #     f.close()
-    topo_file = "/home/thanos/p4_new/tutorials/exercises/p4_FWB/pod-topo/topology.json"
+    topo_file = "/home/thanos/tutorials/exercises/p4_FWB/pod-topo/topology.json"
     with open(topo_file, 'r') as f:
         topo = json.load(f)
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
-    record_string = '/home/thanos/p4_new/tutorials/exercises/p4_FWB/out_data/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/realistic_loss/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
     recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 
