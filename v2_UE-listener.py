@@ -4,10 +4,10 @@ import sys
 import socket
 import random
 import struct
+import time
 import argparse
 import numpy as np
 import json
-import time
 from time import sleep
 import os
 
@@ -47,6 +47,38 @@ def update_multicast(prev_dst, next_dst, last_received):
     ctrl_pkt = e / pkt_fwb_layer / pkt_ip_layer / pkt_control_bbone
     return ctrl_pkt
 
+def outage_to_bs(dst_bs):
+    outage_to_bs = False 
+    chance = (random.randint(1,100)) 
+    if dst_bs < 125: # no outage
+	loss_prob = 0.0000001
+    elif dst_bs < 150: 
+	loss_prob = 0.1
+    elif dst_bs < 175: 
+	loss_prob = 0.35
+    elif dst_bs < 200: 
+	loss_prob = 0.75
+    else:
+	loss_prob = 1
+    if chance <= loss_prob*100:
+	outage_to_bs = True
+    return outage_to_bs
+
+def new_dst_id(outage1,outage2,prev_dst):
+    if prev_dst == 0 or prev_dst == 1:
+	if outage1 and not outage2: # BS1 is down and BS2 is up
+	    next_dst = 3
+	elif not outage1 and outage2: # BS1 is up and BS2 is down
+	    next_dst = 2 
+	else:
+	    next_dst = prev_dst
+    elif prev_dst == 2 or prev_dst == 3:
+	if not outage1 and not outage2:
+	    next_dst = prev_dst - 2 # 3->1, 2->0
+	else:
+	    next_dst = prev_dst
+    return next_dst
+
 
 def handle_pkt(pkt):
     global last_received
@@ -56,7 +88,12 @@ def handle_pkt(pkt):
     global prev_dst
     global recording_file
     global t0
+    global last_time
     global received_packets
+    global dist_bs1
+    global dist_bs2
+    global delays
+    global row
 
     if fwb in pkt:
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
@@ -67,28 +104,32 @@ def handle_pkt(pkt):
 	    else:
 		last_received = 0
             # if last_received + 1 == pkt[fwb].pkt_id:
-            #if pkt[fwb].dst_id in a_m_idx[prev_dst]:
-	    if pkt[fwb].pkt_id not in received_packets:
+            if pkt[fwb].dst_id in a_m_idx[prev_dst]:
+	    #if pkt[fwb].pkt_id not in received_packets:
 # 		if condition about a_m_index - > foor a given ue state(prev_dst) check if prev_dst primary is correct for received packet dst.
             	print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
 		recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
             	received_packets.append(pkt[fwb].pkt_id)
 	    	last_received = np.max(received_packets)
-            	if last_received >= 4000:
+            	if last_received >= 40000:
                 	print('Done')
                 	exit()
 # 		else of am index:
 # 			observe packets coming here and why.
-# 			these packets here are coming from previous primary bs which supposed to be blocked.
-            if last_received == event_idx:
-                #last_received = pkt[fwb].pkt_id
-                next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
-                print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
-                event_idx = random.randint(38,42) + last_received
+# 			these packets here are coming from previous primary bs which supposed to be blocked
+	    current_time = time.time()
+            if current_time - last_time >= float(delays[row])/10:
+		last_time = current_time 
+		outage1 = outage_to_bs(float(dist_bs1[row]))
+		outage2 = outage_to_bs(float(dist_bs2[row]))
+		next_dst = new_dst_id(outage1,outage2,prev_dst) 
+                print('PKT IDX:{}, NXT_DST:{}, {}, {}'.format(last_received,next_dst,outage1,outage2))
 		#recording_file.write('{},{}\n'.format(last_received,time.time()-t0))
-                notification_pkt = update_multicast(prev_dst,next_dst,last_received)
-                sendp(notification_pkt, iface=iface, verbose=False)
+		if next_dst != prev_dst:
+                    notification_pkt = update_multicast(prev_dst,next_dst,last_received)
+                    sendp(notification_pkt, iface=iface, verbose=False)
                 prev_dst = next_dst
+		row += 1 
             # else:
                 # pkt.show()
                 # sleep(200)
@@ -99,18 +140,50 @@ def main():
     global event_idx
     global transitions
     global a_m_idx
+    global t0 
+    global dist_bs1
+    global dist_bs2
+    global delays
+    global row
+    global last_time 
+    t0 = time.time()
+    last_time = t0
+
+
     # transitions = [[2,3],[2,3],[0,4],[1,4],[2,3]]
     transitions = [[2,3],[2,3],[0],[1],[2,3]]
     event_idx = random.randint(38,42)
     a_m_idx = [[0,2],[1,3],[2,0],[3,1],[2,3]] # acceptable multicast ...
     #destinations for a prev_dst, for example adding a secondary bs or removing the secondary bs should still be valid even if prev_dst is different
     global recording_file
-    global t0
-    t0 = time.time()
+
     #         f = 
     #     prev_dst = f.read() #update the multicast tree
     #     prev_dst = int(prev_dst)
     #     f.close()
+    
+    distance_file = "/home/thanos/tutorials/exercises/p4_FWB/data_analysis/realistic_loss_dist.txt"
+    f=open(distance_file,"r")
+    lines=f.readlines()
+    dist_bs1=[]
+    dist_bs2=[]
+    delays=[]
+    for x in lines:
+	sline = x.split(",")
+    	dist_bs1.append(sline[0]) #distances from BS1
+    f.close()
+    f=open(distance_file,"r")
+    for x in lines:
+	sline = x.split(",")
+    	dist_bs2.append(sline[1]) #distances from BS2
+    f.close()
+    f=open(distance_file,"r")
+    for x in lines:
+	sline = x.split(",")
+    	delays.append(sline[2].strip()) #time to stop 
+    f.close()
+    row = 1 # shows where in the realistic_loss file we are
+
     topo_file = "/home/thanos/tutorials/exercises/p4_FWB/pod-topo/topology.json"
     with open(topo_file, 'r') as f:
         topo = json.load(f)
