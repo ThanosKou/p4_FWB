@@ -6,7 +6,7 @@ import matplotlib.rcsetup as rcsetup
 # sns.set()
 import os
 def compile_data(data_path):
-    #data_path = '/home/thanos/tutorials/exercises/p4_FWB/out_data'
+    data_path = '/home/thanos/tutorials/exercises/p4_FWB/out_data'
     files = os.listdir(data_path)
     gpp3_files = [file for file in files if file.startswith('3gpp_')]
     fwb_files = [file for file in files if file.startswith('pkt')]
@@ -51,8 +51,8 @@ def compile_data(data_path):
 
 
 if __name__ == '__main__':
-    #data_path = '/home/thanos/tutorials/exercises/p4_FWB/out_data'
-    #compile_data(data_path)
+    data_path = '/home/thanos/tutorials/exercises/p4_FWB/out_data'
+    compile_data(data_path)
     df = pd.read_csv('combined_data.txt')
     df['GW Delay (ms), UE Delay (ms)'] = df['GWDelay'].astype('int').astype('str')+ ', ' + df['UEDelay'].astype('int').astype('str')
     df_small = df[0:4000]

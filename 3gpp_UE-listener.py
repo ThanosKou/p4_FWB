@@ -57,15 +57,15 @@ def handle_pkt(pkt):
                 last_received = pkt[fwb].pkt_id
                 print('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
                 recording_file.write('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
-                if last_received >= 2000:
+                if last_received >= 4000:
                     print('Done')
                     exit()
                 # print('{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
             # print(last_received)
             if last_received == event_idx:
                 next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
-                #print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
-                event_idx = random.randint(200,250) + last_received
+                print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
+                event_idx = random.randint(50,60) + last_received
                 notification_pkt = update_multicast(prev_dst,next_dst,last_received)
                 sendp(notification_pkt, iface=iface, verbose=False)
                 prev_dst = next_dst
