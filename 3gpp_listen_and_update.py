@@ -69,32 +69,6 @@ def main():
     # while True:
         # received_packet = sniff(iface = iface,  count=1)[0]
     received_packet = sniff(iface = iface,  prn = lambda x : handle_pkt(x))
-        # filter="icmp and host 66.35.250.151"
-        # print(received_packet)
-        # # new_dst = received_packet[fwb].dst_id
-        # new_dst = received_packet
-        # f = open("/home/mfo254/tutorials/exercises/p4_FWB/dst_holder.txt", "w")
-        # f.write(str(new_dst))
-        # f.close()
-
-
-
-    # current_dst_id = 0
-    # acked_idx = 0
-    # sent_idx = 0
-    # pkt = IP(dst=addr) / TCP(dport=1234, sport=51995) / args.message
-    # while True:       
-    #     while current_sent < current_acked + 100:
-    #         # send a packet setting the pkt index sent+1 number of packets here using current_dst_id
-    #         e =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff')
-    #         pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1) /  pkt
-    #         sendp(pkt, iface=iface, verbose=False)
-    #         sent_idx = sent_idx + 1
-    #         sleep(0.001)
-    #         # acked_idx = sniff(iface = iface, prn = lambda x: handle_pkt(x))
-    #     acked_idx = sniff(iface = iface, prn = lambda x: handle_pkt(x))
-
-
 
 if __name__ == '__main__':
     main()

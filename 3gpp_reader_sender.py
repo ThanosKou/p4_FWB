@@ -41,9 +41,11 @@ def handle_pkt(pkt):
 
 
 def main():
+    global t0
+    t0 = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument('--ip_addr', type=str, default='10.0.2.2',help="The destination IP address to use")
-    parser.add_argument('--message', type=str, default='From h1 to h2',help="The message to include in packet")
+    parser.add_argument('--message', type=str, default='',help="The message to include in packet")
     parser.add_argument('--dst_id', type=int, default=None, help='The heartBeat dst_id to use, if unspecified then heartbeat header will not be included in packet')
     args = parser.parse_args()
 
@@ -67,38 +69,18 @@ def main():
         f.close()
         if dst_id in a_m_idx[prev_dst_id]:
             prev_dst_id = dst_id
-            pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone
+            pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(time.time()-t0)
             sent_idx = sent_idx + 1
-            sendp(pkt, iface=iface, verbose=False)
+            sendp(pkt, inter=0.1, iface=iface, verbose=False)
         else:
             prev_dst_id = dst_id
+	    highest_buffered_idx = sent_idx
             sent_idx = acked_idx - 1
-            pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone
-            sent_idx = sent_idx + 1
-            sendp(pkt, iface=iface, verbose=False)
-
-            
-
-
-        # while sent_idx < (acked_idx + 10):
-        #     # send a packet setting the pkt index sent+1 number of packets here using current_dst_id
-        #     pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone
-        #     # pkt.show()
-        #     sleep(0.2)
-        #     sendp(pkt, iface=iface, verbose=False)
-        #     pkt.show()
-        #     # sleep(1)
-        #     sent_idx = sent_idx + 1
-        #     incoming_packet = sniff(iface = iface, count=1)[0]
-        #     # incoming_packet.show()
-        #     acked_idx = incoming_packet[fwb].pkt_id
-        # incoming_packet = sniff(iface = iface, count=1)[0]
-        # incoming_packet.show()
-        # acked_idx = incoming_packet[fwb].pkt_id
-            # acked_idx = sniff(iface = iface, prn = lambda x: handle_pkt(x))
-        # acked_idx = sniff(iface = iface, count=1)
-        # acked_idx.show()
-
+	    print('from:{}, to:{}'.format(sent_idx,highest_buffered_idx))
+	    for i in range(sent_idx,highest_buffered_idx):
+            	pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(time.time()-t0)
+            	sent_idx = sent_idx + 1
+            	sendp(pkt, inter=0.001, iface=iface, verbose=False)
 
 
 if __name__ == '__main__':
