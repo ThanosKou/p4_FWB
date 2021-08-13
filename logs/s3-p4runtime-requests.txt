@@ -1,10 +1,10 @@
 
-[2021-08-12 13:45:54.215] /p4.v1.P4Runtime/SetForwardingPipelineConfig
+[2021-08-13 14:03:28.401] /p4.v1.P4Runtime/SetForwardingPipelineConfig
 ---
 Message too long (21909 bytes)! Skipping log...
 ---
 
-[2021-08-12 13:45:54.220] /p4.v1.P4Runtime/Write
+[2021-08-13 14:03:28.411] /p4.v1.P4Runtime/Write
 ---
 device_id: 2
 election_id {
@@ -26,7 +26,7 @@ updates {
 }
 ---
 
-[2021-08-12 13:45:54.221] /p4.v1.P4Runtime/Write
+[2021-08-13 14:03:28.415] /p4.v1.P4Runtime/Write
 ---
 device_id: 2
 election_id {
@@ -68,7 +68,7 @@ updates {
 }
 ---
 
-[2021-08-12 13:45:54.222] /p4.v1.P4Runtime/Write
+[2021-08-13 14:03:28.416] /p4.v1.P4Runtime/Write
 ---
 device_id: 2
 election_id {
@@ -110,7 +110,7 @@ updates {
 }
 ---
 
-[2021-08-12 13:45:54.223] /p4.v1.P4Runtime/Write
+[2021-08-13 14:03:28.416] /p4.v1.P4Runtime/Write
 ---
 device_id: 2
 election_id {
@@ -152,7 +152,7 @@ updates {
 }
 ---
 
-[2021-08-12 13:45:54.223] /p4.v1.P4Runtime/Write
+[2021-08-13 14:03:28.417] /p4.v1.P4Runtime/Write
 ---
 device_id: 2
 election_id {
@@ -194,7 +194,7 @@ updates {
 }
 ---
 
-[2021-08-12 13:45:54.229] /p4.v1.P4Runtime/Write
+[2021-08-13 14:03:28.418] /p4.v1.P4Runtime/Write
 ---
 device_id: 2
 election_id {
@@ -236,7 +236,7 @@ updates {
 }
 ---
 
-[2021-08-12 13:45:54.230] /p4.v1.P4Runtime/Write
+[2021-08-13 14:03:28.418] /p4.v1.P4Runtime/Write
 ---
 device_id: 2
 election_id {
@@ -278,7 +278,7 @@ updates {
 }
 ---
 
-[2021-08-12 13:45:54.233] /p4.v1.P4Runtime/Write
+[2021-08-13 14:03:28.420] /p4.v1.P4Runtime/Write
 ---
 device_id: 2
 election_id {
@@ -320,7 +320,7 @@ updates {
 }
 ---
 
-[2021-08-12 13:45:54.234] /p4.v1.P4Runtime/Write
+[2021-08-13 14:03:28.422] /p4.v1.P4Runtime/Write
 ---
 device_id: 2
 election_id {
@@ -358,7 +358,7 @@ updates {
 }
 ---
 
-[2021-08-12 13:45:54.235] /p4.v1.P4Runtime/Write
+[2021-08-13 14:03:28.424] /p4.v1.P4Runtime/Write
 ---
 device_id: 2
 election_id {
@@ -400,7 +400,7 @@ updates {
 }
 ---
 
-[2021-08-12 13:45:54.235] /p4.v1.P4Runtime/Write
+[2021-08-13 14:03:28.425] /p4.v1.P4Runtime/Write
 ---
 device_id: 2
 election_id {
