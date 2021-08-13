@@ -79,10 +79,12 @@ def handle_pkt(pkt):
             notification_pkt = e / fwb(dst_id=pkt[fwb].dst_id, pkt_id=0,
                 pid=TYPE_IPV4)/IP(dst='10.0.1.1')/ TCP(dport=2222, sport=50004) / 'Notifying h1 (GW), BS2 is primary now Changed at packet idx {}'.format(ue_asks)
             sendp(notification_pkt,iface=iface,verbose=False)
+	    notification_pkt = e / fwb(dst_id=pkt[fwb].dst_id,pkt_id=0,
+                pid=TYPE_IPV4)/IP(dst='10.0.2.2')/ TCP(dport=2223, sport=50004) / 'Notifying UE, BS1 is primary now Changed at packet idx {}'.format(ue_asks)
+            sendp(notification_pkt,iface=iface,verbose=False)
             # notification_pkt.show()
         elif pkt[IP].src =='10.0.1.1' and pkt[TCP].dport==1111: #received data packet
             current_state = BS_2_dst_id_map(pkt[fwb].dst_id)
-	    current_state == 'secondary'
             if current_state == 'secondary':
             	pkt_idx = pkt[fwb].pkt_id
             	my_buffer[w_idx] = [pkt_idx,str(bytes(pkt[TCP].payload))]

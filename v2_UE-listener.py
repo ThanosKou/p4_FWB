@@ -57,8 +57,12 @@ def handle_pkt(pkt):
     global recording_file
     global t0
     global received_packets
+    global UE_delay
+    global transition
 
     if fwb in pkt:
+	if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 2223: # confirming the change from listen_and_update
+	    transition = 0
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
 	    generated_time = bytes(pkt[TCP].payload)
 	    if received_packets:
@@ -67,19 +71,24 @@ def handle_pkt(pkt):
 		last_received = 0
             #last_received = pkt[fwb].pkt_id
             # if last_received + 1 == pkt[fwb].pkt_id:
-            if pkt[fwb].dst_id in a_m_idx[prev_dst] and pkt[fwb].pkt_id not in received_packets:
+            if pkt[fwb].pkt_id not in received_packets:
 # 		if condition about a_m_index - > foor a given ue state(prev_dst) check if prev_dst primary is correct for received packet dst.
-                print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
-                recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
-                received_packets.append(pkt[fwb].pkt_id)
+		received_packets.append(pkt[fwb].pkt_id)
 	        last_received = np.max(received_packets)
-                if last_received >= 2000:
+		if last_received == event_idx or transition:
+             	    print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0+2*UE_delay,prev_dst)) 
+                    recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0+2*UE_delay/1000,prev_dst))
+		else:	
+              	    print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst)) 
+                    recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
+                if last_received >= 4000:
                     print('Done')
                     exit()
 # 		else of am index:
 # 			observe packets coming here and why.
 # 			these packets here are coming from previous primary bs which supposed to be blocked.
             if last_received == event_idx:
+		transition = 1
                 #last_received = pkt[fwb].pkt_id
                 next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
                 print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
@@ -97,6 +106,10 @@ def main():
     global event_idx
     global transitions
     global a_m_idx
+    global UE_delay 
+    global transition
+
+    transition = 0
     # transitions = [[2,3],[2,3],[0,4],[1,4],[2,3]]
     transitions = [[2,3],[2,3],[0],[1],[2,3]]
     event_idx = random.randint(25,50)
