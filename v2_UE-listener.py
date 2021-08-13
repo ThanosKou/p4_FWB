@@ -61,10 +61,13 @@ def handle_pkt(pkt):
     if fwb in pkt:
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
 	    generated_time = bytes(pkt[TCP].payload)
+	    if received_packets:
+	    	last_received = np.max(received_packets)
+	    else:
+		last_received = 0
             #last_received = pkt[fwb].pkt_id
-	    last_received = np.max(received_packets)
             # if last_received + 1 == pkt[fwb].pkt_id:
-            if pkt[fwb].pkt_id not in received_packets:
+            if pkt[fwb].dst_id in a_m_idx[prev_dst] and pkt[fwb].pkt_id not in received_packets:
 # 		if condition about a_m_index - > foor a given ue state(prev_dst) check if prev_dst primary is correct for received packet dst.
                 print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
                 recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
@@ -106,12 +109,12 @@ def main():
     #     prev_dst = f.read() #update the multicast tree
     #     prev_dst = int(prev_dst)
     #     f.close()
-    topo_file = "/home/thanos/p4_new/tutorials/exercises/p4_FWB/pod-topo/topology.json"
+    topo_file = "/home/thanos/tutorials/exercises/p4_FWB/pod-topo/topology.json"
     with open(topo_file, 'r') as f:
         topo = json.load(f)
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
-    record_string = '/home/thanos/p4_new/tutorials/exercises/p4_FWB/out_data/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
     recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 
@@ -138,81 +141,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-
-
-
-# # prev_dst = 0, next_dst = 2
-# # prev_dst = 0, next_dst = 3
-# # prev_dst = 1, next_dst = 2
-# # prev_dst = 1, next_dst = 3
-# # prev_dst = 2, next_dst = 0
-# # prev_dst = 2, next_dst = 4
-# # prev_dst = 3, next_dst = 1
-# # prev_dst = 3, next_dst = 4
-# # prev_dst = 4, next_dst = 2
-# # prev_dst = 4, next_dst = 3
-
-
-    # how_many_events = 20
-    # start_state = 1
-    # states=[start_state]
-    # for _ in range(how_many_events):
-    #     next_state = int(
-    #     np.random.choice(np.array(transitions[states[-1]]),size=1))
-    #     states.append(next_state)
-
-    # last_change_pkt_idx = 0
-    # change_pkt_idx = [last_change_pkt_idx]
-    # for state in states:
-    #     next_pkt_idx = last_change_pkt_idx + random.randint(10,20)
-    #     if state != 4:
-    #         change_pkt_idx.append(next_pkt_idx)
-    #         last_change_pkt_idx = next_pkt_idx
-    #     else:
-    #         change_pkt_idx.append(last_change_pkt_idx)
-    #         last_change_pkt_idx = last_change_pkt_idx
-
-
-
-
-    # change_pkt_idx=np.sort(np.random.choice(np.arange(10000),size=125,replace=False))
-
-
-# # prev_dst = 0, next_dst = 2
-# # send a packet to gw using control tcp port and new dst
-# target_ip = IP(dst='10.0.1.1')
-
-# # prev_dst = 0, next_dst = 3
-# # send a packet to S3 using control tcp port with new dst it
-# target_ip = IP(dst='10.0.4.4')
-
-# # prev_dst = 1, next_dst = 2
-# # send a packet to S2 using control tcp port with new dst id
-# target_ip = IP(dst='10.0.3.3') 
-
-# # prev_dst = 1, next_dst = 3
-# # send a packet to gw using control tcp port and new dst
-# target_ip = IP(dst='10.0.1.1')
-
-# # prev_dst = 2, next_dst = 0
-# # send a packet to gw using control tcp port and new dst
-# target_ip = IP(dst='10.0.1.1')
-
-# # prev_dst = 2, next_dst = 4
-# # send a packet to gw using control tcp port and new dst
-# target_ip = IP(dst='10.0.1.1')
-
-# # prev_dst = 3, next_dst = 1
-# # send a packet to gw using control tcp port and new dst
-# target_ip = IP(dst='10.0.1.1')
-
-# # prev_dst = 3, next_dst = 4
-# # send a packet to gw using control tcp port and new dst
-# target_ip = IP(dst='10.0.1.1')
-
-# # prev_dst = 4, next_dst = 2
-# # send a packet to gw using control tcp port and new dst
-# target_ip = IP(dst='10.0.1.1')
-
-# # prev_dst = 4, next_dst = 3
-# # send a packet to gw using control tcp port and new dst

@@ -39,13 +39,13 @@ def handle_pkt(pkt):
     # pkt.show()
     if fwb in pkt and pkt[TCP].dport==2222 and pkt[TCP].sport!= 3333: # 2222 is control tcp ports
         # pkt.show()
-        f = open("/home/thanos/p4_new/tutorials/exercises/p4_FWB/dst_holder.txt", "r")
+        f = open("/home/thanos/tutorials/exercises/p4_FWB/dst_holder.txt", "r")
         line = f.read()
         prev_dst = int(line.split()[0])
         acked_idx = int(line.split()[1])
         f.close()
         # print('reached hereeee')
-        f = open("/home/thanos/p4_new/tutorials/exercises/p4_FWB/dst_holder.txt", "w")
+        f = open("/home/thanos/tutorials/exercises/p4_FWB/dst_holder.txt", "w")
         write_string = '{} {}\n'.format(pkt[fwb].dst_id,pkt[fwb].pkt_id)
         f.write(write_string) #update the multicast tree
         f.close()

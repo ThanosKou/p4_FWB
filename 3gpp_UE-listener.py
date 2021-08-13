@@ -49,11 +49,13 @@ def handle_pkt(pkt):
     global a_m_idx
     global prev_dst
     global recording_file
+    global received_packets
     global t0
     if fwb in pkt:
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
 	    generated_time = bytes(pkt[TCP].payload)
-            if pkt[fwb].dst_id in a_m_idx[prev_dst]:
+            if pkt[fwb].dst_id in a_m_idx[prev_dst] and pkt[fwb].pkt_id not in received_packets:
+		received_packets.append(pkt[fwb].pkt_id)
                 last_received = pkt[fwb].pkt_id
                 print('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
                 recording_file.write('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
@@ -79,6 +81,7 @@ def main():
     global event_idx
     global transitions
     global a_m_idx
+    global received_packets
     # transitions = [[2,3],[2,3],[0,4],[1,4],[2,3]]
     transitions = [[2,3],[2,3],[0],[1],[2,3]]
     event_idx = random.randint(25,50)
@@ -113,6 +116,7 @@ def main():
     e =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff', type=TYPE_FWB)
     pkt_control_bbone =  TCP(dport=2222, sport=50002) / 'Primary change'
     last_received=-1
+    received_packets = []
     received_packet = sniff(iface = iface,  prn = lambda x : handle_pkt(x))
 
 

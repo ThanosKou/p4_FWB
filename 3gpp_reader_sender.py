@@ -76,7 +76,7 @@ def main():
             prev_dst_id = dst_id
 	    highest_buffered_idx = sent_idx
             sent_idx = acked_idx - 1
-	    print('from:{}, to:{}'.format(sent_idx,highest_buffered_idx))
+	    #print('from:{}, to:{}'.format(sent_idx,highest_buffered_idx))
 	    for i in range(sent_idx,highest_buffered_idx):
             	pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(time.time()-t0)
             	sent_idx = sent_idx + 1
