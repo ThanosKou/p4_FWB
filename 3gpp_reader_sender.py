@@ -66,6 +66,7 @@ def main():
         line = f.read()
         dst_id = int(line.split()[0])
         acked_idx = int(line.split()[1])
+	gener_time = float(line.split()[2])
         f.close()
         if dst_id in a_m_idx[prev_dst_id]:
             prev_dst_id = dst_id
@@ -76,9 +77,10 @@ def main():
             prev_dst_id = dst_id
 	    highest_buffered_idx = sent_idx
             sent_idx = acked_idx - 1
+	    t1 = time.time()
 	    #print('from:{}, to:{}'.format(sent_idx,highest_buffered_idx))
 	    for i in range(sent_idx,highest_buffered_idx):
-            	pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(time.time()-t0)
+            	pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(gener_time+t1-time.time())
             	sent_idx = sent_idx + 1
             	sendp(pkt, inter=0.001, iface=iface, verbose=False)
 

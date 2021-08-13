@@ -35,10 +35,10 @@ from scapy.layers.inet import _IPOption_HDR
 
 # dst_id = 4 => both S2-UE and S3-UE links are down
 
-def update_multicast(prev_dst, next_dst, last_received):
+def update_multicast(prev_dst, next_dst, last_received,generated_time):
     pkt_fwb_layer = fwb(dst_id=next_dst, pkt_id=last_received+1, pid=TYPE_IPV4)
     pkt_ip_layer = IP(dst='10.0.1.1')
-    ctrl_pkt = e / pkt_fwb_layer / pkt_ip_layer / pkt_control_bbone
+    ctrl_pkt = e / pkt_fwb_layer / pkt_ip_layer / pkt_control_bbone / generated_time
     return ctrl_pkt
 
 
@@ -68,7 +68,7 @@ def handle_pkt(pkt):
                 next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
                 print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
                 event_idx = random.randint(50,60) + last_received
-                notification_pkt = update_multicast(prev_dst,next_dst,last_received)
+                notification_pkt = update_multicast(prev_dst,next_dst,last_received,generated_time)
                 sendp(notification_pkt, iface=iface, verbose=False)
                 prev_dst = next_dst
                 last_received = last_received + 1
@@ -114,7 +114,7 @@ def main():
     global prev_dst
     prev_dst = 1 #always start with case 1
     e =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff', type=TYPE_FWB)
-    pkt_control_bbone =  TCP(dport=2222, sport=50002) / 'Primary change'
+    pkt_control_bbone =  TCP(dport=2222, sport=50002) / ''
     last_received=-1
     received_packets = []
     received_packet = sniff(iface = iface,  prn = lambda x : handle_pkt(x))
@@ -124,82 +124,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-# # prev_dst = 0, next_dst = 2
-# # prev_dst = 0, next_dst = 3
-# # prev_dst = 1, next_dst = 2
-# # prev_dst = 1, next_dst = 3
-# # prev_dst = 2, next_dst = 0
-# # prev_dst = 2, next_dst = 4
-# # prev_dst = 3, next_dst = 1
-# # prev_dst = 3, next_dst = 4
-# # prev_dst = 4, next_dst = 2
-# # prev_dst = 4, next_dst = 3
-
-
-    # how_many_events = 20
-    # start_state = 1
-    # states=[start_state]
-    # for _ in range(how_many_events):
-    #     next_state = int(
-    #     np.random.choice(np.array(transitions[states[-1]]),size=1))
-    #     states.append(next_state)
-
-    # last_change_pkt_idx = 0
-    # change_pkt_idx = [last_change_pkt_idx]
-    # for state in states:
-    #     next_pkt_idx = last_change_pkt_idx + random.randint(10,20)
-    #     if state != 4:
-    #         change_pkt_idx.append(next_pkt_idx)
-    #         last_change_pkt_idx = next_pkt_idx
-    #     else:
-    #         change_pkt_idx.append(last_change_pkt_idx)
-    #         last_change_pkt_idx = last_change_pkt_idx
-
-
-
-
-    # change_pkt_idx=np.sort(np.random.choice(np.arange(10000),size=125,replace=False))
-
-
-# # prev_dst = 0, next_dst = 2
-# # send a packet to gw using control tcp port and new dst
-# target_ip = IP(dst='10.0.1.1')
-
-# # prev_dst = 0, next_dst = 3
-# # send a packet to S3 using control tcp port with new dst it
-# target_ip = IP(dst='10.0.4.4')
-
-# # prev_dst = 1, next_dst = 2
-# # send a packet to S2 using control tcp port with new dst id
-# target_ip = IP(dst='10.0.3.3') 
-
-# # prev_dst = 1, next_dst = 3
-# # send a packet to gw using control tcp port and new dst
-# target_ip = IP(dst='10.0.1.1')
-
-# # prev_dst = 2, next_dst = 0
-# # send a packet to gw using control tcp port and new dst
-# target_ip = IP(dst='10.0.1.1')
-
-# # prev_dst = 2, next_dst = 4
-# # send a packet to gw using control tcp port and new dst
-# target_ip = IP(dst='10.0.1.1')
-
-# # prev_dst = 3, next_dst = 1
-# # send a packet to gw using control tcp port and new dst
-# target_ip = IP(dst='10.0.1.1')
-
-# # prev_dst = 3, next_dst = 4
-# # send a packet to gw using control tcp port and new dst
-# target_ip = IP(dst='10.0.1.1')
-
-# # prev_dst = 4, next_dst = 2
-# # send a packet to gw using control tcp port and new dst
-# target_ip = IP(dst='10.0.1.1')
-
-# # prev_dst = 4, next_dst = 3
-# # send a packet to gw using control tcp port and new dst
+  

@@ -43,10 +43,11 @@ def handle_pkt(pkt):
         line = f.read()
         prev_dst = int(line.split()[0])
         acked_idx = int(line.split()[1])
+	gener_time = float(line.split()[2])
         f.close()
         # print('reached hereeee')
         f = open("/home/thanos/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "w")
-        write_string = '{} {}\n'.format(pkt[fwb].dst_id,pkt[fwb].pkt_id)
+        write_string = '{} {} {}\n'.format(pkt[fwb].dst_id,pkt[fwb].pkt_id,bytes(pkt[TCP].payload))
         f.write(write_string) #update the multicast tree
         f.close()
         # send control acknowledge to the origin of the packet
@@ -65,7 +66,10 @@ def main():
     global pkt_control_bbone
     e =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff', type=TYPE_FWB)
     pkt_control_bbone =  TCP(dport=2222, sport=3333) / 'Confirming the change'
-
+    f = open("/home/thanos/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "w")
+    write_string = '{} {} {}\n'.format(1,0,time.time())
+    f.write(write_string) #update the multicast tree
+    f.close()
     # while True:
         # received_packet = sniff(iface = iface,  count=1)[0]
     received_packet = sniff(iface = iface,  prn = lambda x : handle_pkt(x))
