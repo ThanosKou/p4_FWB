@@ -83,7 +83,7 @@ def handle_pkt(pkt):
                 #last_received = pkt[fwb].pkt_id
                 next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
                 print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
-                event_idx = random.randint(20,30) + last_received
+                event_idx = random.randint(50,60) + last_received
                 notification_pkt = update_multicast(prev_dst,next_dst,last_received)
                 sendp(notification_pkt, iface=iface, verbose=False)
                 prev_dst = next_dst
@@ -114,7 +114,7 @@ def main():
         topo = json.load(f)
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
-    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/burst_GW_regular_loss/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
     recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 
