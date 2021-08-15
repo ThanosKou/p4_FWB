@@ -47,6 +47,12 @@ def update_multicast(prev_dst, next_dst, last_received):
     ctrl_pkt = e / pkt_fwb_layer / pkt_ip_layer / pkt_control_bbone
     return ctrl_pkt
 
+def send_t0_listener(prev_dst, next_dst, last_received,t0_listener):
+    pkt_fwb_layer = fwb(dst_id=next_dst, pkt_id=last_received+1, pid=TYPE_IPV4)
+    pkt_ip_layer = IP(dst='10.0.1.1')
+    ctrl_pkt = e / pkt_fwb_layer / pkt_ip_layer / pkt_control_bbone_t0 / t0_listener
+    return ctrl_pkt
+
 
 def handle_pkt(pkt):
     global last_received
@@ -76,10 +82,10 @@ def handle_pkt(pkt):
 		received_packets.append(pkt[fwb].pkt_id)
 	        last_received = np.max(received_packets)
 		if last_received == event_idx or transition:
-             	    print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0+2*UE_delay,prev_dst)) 
+             	    print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0+2*UE_delay/1000,prev_dst)) 
                     recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0+2*UE_delay/1000,prev_dst))
 		else:	
-              	    print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst)) 
+              	    #print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst)) 
                     recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
                 if last_received >= 4000:
                     print('Done')
@@ -117,7 +123,6 @@ def main():
     #destinations for a prev_dst, for example adding a secondary bs or removing the secondary bs should still be valid even if prev_dst is different
     global recording_file
     global t0
-    t0 = time.time()
     #         f = 
     #     prev_dst = f.read() #update the multicast tree
     #     prev_dst = int(prev_dst)
@@ -139,12 +144,17 @@ def main():
     global e
     global last_received
     global pkt_control_bbone
+    global pkt_control_bbone_t0
     global prev_dst
     global received_packets
     received_packets = []
     prev_dst = 1 #always start with case 1
     e =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff', type=TYPE_FWB)
     pkt_control_bbone =  TCP(dport=2222, sport=50002) / 'Primary change'
+    pkt_control_bbone_t0 =  TCP(dport=2223, sport=50002) / ''
+    t0 = time.time()
+    notification_pkt = send_t0_listener(1,0,0,str(t0))
+    sendp(notification_pkt, iface=iface, verbose=False)
     last_received=0
     received_packet = sniff(iface = iface,  prn = lambda x : handle_pkt(x))
 

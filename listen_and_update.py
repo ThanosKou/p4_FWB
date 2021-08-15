@@ -34,6 +34,21 @@ def get_if():
         exit(1)
     return iface
 
+def find_common_t0(pkt):
+    if fwb in pkt and pkt[TCP].dport==2223 and pkt[TCP].sport!= 3333: # 2222 is control tcp ports
+        # pkt.show()
+        f = open("/home/thanos/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "r")
+        line = f.read()
+        prev_dst = int(line.split()[0])
+        acked_idx = int(line.split()[1])
+	t0_listener = bytes(pkt[TCP].payload)
+        f.close()
+        # print('reached hereeee')
+        f = open("/home/thanos/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "w")
+        write_string = '{} {} {}\n'.format(prev_dst,acked_idx,t0_listener)
+        f.write(write_string) #update the multicast tree
+        f.close()
+
 
 def handle_pkt(pkt):
     # pkt.show()
@@ -43,10 +58,11 @@ def handle_pkt(pkt):
         line = f.read()
         prev_dst = int(line.split()[0])
         acked_idx = int(line.split()[1])
+	t0_listener = float(line.split()[2])
         f.close()
         # print('reached hereeee')
         f = open("/home/thanos/tutorials/exercises/p4_FWB/dst_holder.txt", "w")
-        write_string = '{} {}\n'.format(pkt[fwb].dst_id,pkt[fwb].pkt_id)
+        write_string = '{} {} {}\n'.format(pkt[fwb].dst_id,pkt[fwb].pkt_id,t0_listener)
         f.write(write_string) #update the multicast tree
         f.close()
         # send control acknowledge to the origin of the packet
@@ -69,31 +85,6 @@ def main():
     # while True:
         # received_packet = sniff(iface = iface,  count=1)[0]
     received_packet = sniff(iface = iface,  prn = lambda x : handle_pkt(x))
-        # filter="icmp and host 66.35.250.151"
-        # print(received_packet)
-        # # new_dst = received_packet[fwb].dst_id
-        # new_dst = received_packet
-        # f = open("/home/mfo254/tutorials/exercises/p4_FWB/dst_holder.txt", "w")
-        # f.write(str(new_dst))
-        # f.close()
-
-
-
-    # current_dst_id = 0
-    # acked_idx = 0
-    # sent_idx = 0
-    # pkt = IP(dst=addr) / TCP(dport=1234, sport=51995) / args.message
-    # while True:       
-    #     while current_sent < current_acked + 100:
-    #         # send a packet setting the pkt index sent+1 number of packets here using current_dst_id
-    #         e =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff')
-    #         pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1) /  pkt
-    #         sendp(pkt, iface=iface, verbose=False)
-    #         sent_idx = sent_idx + 1
-    #         sleep(0.001)
-    #         # acked_idx = sniff(iface = iface, prn = lambda x: handle_pkt(x))
-    #     acked_idx = sniff(iface = iface, prn = lambda x: handle_pkt(x))
-
 
 
 if __name__ == '__main__':

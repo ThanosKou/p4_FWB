@@ -61,7 +61,10 @@ def main():
     sent_idx = 0
     while True:
         f = open("/home/thanos/tutorials/exercises/p4_FWB/dst_holder.txt", "r")
-        dst_id = int(f.read())
+	line = f.read()
+        dst_id = int(line.split()[0])
+        acked_idx = int(line.split()[1])
+	t0_listener = float(line.split()[2])
         f.close()
         if dst_id == 4:
             sleep(1)
