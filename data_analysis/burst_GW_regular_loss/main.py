@@ -8,8 +8,8 @@ import os
 def compile_data(data_path):
     data_path = '/home/thanos/tutorials/exercises/p4_FWB/out_data/burst_GW_regular_loss'
     files = os.listdir(data_path)
-    gpp3_files = [file for file in files if file.startswith('3gpp_') and file.endswith('_500ms.txt')]
-    fwb_files = [file for file in files if file.startswith('pkt') and file.endswith('_500ms.txt')]
+    gpp3_files = [file for file in files if file.startswith('3gpp_') and file.endswith('250ms.txt')]
+    fwb_files = [file for file in files if file.startswith('pkt') and file.endswith('250ms.txt')]
     combined_data_file = 'combined_data.txt'
     wf = open(combined_data_file, "w")
     wf.write('FlowIdx,ArrivalTime,GeneratingTime,FlowDelay,MulticastIdx,GWDelay,UEDelay,Protocol\n')

@@ -106,11 +106,6 @@ def handle_pkt(pkt):
             isTransition = False
             current_dst_id = pkt[fwb].dst_id
 
-        # f = open("/home/thanos/tutorials/exercises/p4_FWB/dst_holder.txt", "w")
-
-        # f.write(str(pkt[fwb].dst_id))
-        # f.close()
-        # return pkt[fwb].dst_id]
 
 
 def main():
