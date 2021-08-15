@@ -35,10 +35,16 @@ from scapy.layers.inet import _IPOption_HDR
 
 # dst_id = 4 => both S2-UE and S3-UE links are down
 
-def update_multicast(prev_dst, next_dst, last_received,generated_time):
+def update_multicast(prev_dst, next_dst, last_received,transitioning_time):
     pkt_fwb_layer = fwb(dst_id=next_dst, pkt_id=last_received+1, pid=TYPE_IPV4)
     pkt_ip_layer = IP(dst='10.0.1.1')
-    ctrl_pkt = e / pkt_fwb_layer / pkt_ip_layer / pkt_control_bbone / generated_time
+    ctrl_pkt = e / pkt_fwb_layer / pkt_ip_layer / pkt_control_bbone / transitioning_time
+    return ctrl_pkt
+
+def send_t0_listener(prev_dst, next_dst, last_received,t0_listener):
+    pkt_fwb_layer = fwb(dst_id=next_dst, pkt_id=last_received+1, pid=TYPE_IPV4)
+    pkt_ip_layer = IP(dst='10.0.1.1')
+    ctrl_pkt = e / pkt_fwb_layer / pkt_ip_layer / pkt_control_bbone_t0 / t0_listener
     return ctrl_pkt
 
 
@@ -57,7 +63,7 @@ def handle_pkt(pkt):
             if pkt[fwb].dst_id in a_m_idx[prev_dst] and pkt[fwb].pkt_id not in received_packets:
 		received_packets.append(pkt[fwb].pkt_id)
                 last_received = pkt[fwb].pkt_id
-                print('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
+                #print('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
                 recording_file.write('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
                 if last_received >= 4000:
                     print('Done')
@@ -66,9 +72,9 @@ def handle_pkt(pkt):
             # print(last_received)
             if last_received == event_idx:
                 next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
-                print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
+                print('PKT IDX:{}, NXT_DST:{}'.format(last_received,str(time.time()-t0)))
                 event_idx = random.randint(50,60) + last_received
-                notification_pkt = update_multicast(prev_dst,next_dst,last_received,generated_time)
+                notification_pkt = update_multicast(prev_dst,next_dst,last_received,str(time.time()-t0))
                 sendp(notification_pkt, iface=iface, verbose=False)
                 prev_dst = next_dst
                 last_received = last_received + 1
@@ -89,7 +95,6 @@ def main():
     #destinations for a prev_dst, for example adding a secondary bs or removing the secondary bs should still be valid even if prev_dst is different
     global recording_file
     global t0
-    t0 = time.time()
     #         f = 
     #     prev_dst = f.read() #update the multicast tree
     #     prev_dst = int(prev_dst)
@@ -101,7 +106,7 @@ def main():
     UE_delay = topo['links'][1][2]
     record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/burst_GW_regular_loss/3gpp_pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
-    recording_file.write('PacketSeqNo,ArrivalTime,MulticastIdx\n')
+    recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 
 
     ifaces = filter(lambda i: 'eth0' in i, os.listdir('/sys/class/net/'))
@@ -111,11 +116,17 @@ def main():
     global e
     global last_received
     global pkt_control_bbone
+    global pkt_control_bbone_t0
     global prev_dst
     prev_dst = 1 #always start with case 1
     e =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff', type=TYPE_FWB)
     pkt_control_bbone =  TCP(dport=2222, sport=50002) / ''
+    pkt_control_bbone_t0 =  TCP(dport=2223, sport=50002) / ''
     last_received=-1
+    t0 = time.time()
+    notification_pkt = send_t0_listener(1,0,0,str(t0))
+    sendp(notification_pkt, iface=iface, verbose=False)
+
     received_packets = []
     received_packet = sniff(iface = iface,  prn = lambda x : handle_pkt(x))
 

@@ -34,6 +34,21 @@ def get_if():
         exit(1)
     return iface
 
+def find_common_t0(pkt):
+    if fwb in pkt and pkt[TCP].dport==2223 and pkt[TCP].sport!= 3333: # 2222 is control tcp ports
+        # pkt.show()
+        f = open("/home/thanos/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "r")
+        line = f.read()
+        prev_dst = int(line.split()[0])
+        acked_idx = int(line.split()[1])
+	gener_time = float(line.split()[2]) # in the first update packet, this contains the t0_listener
+	t0_listener = bytes(pkt[TCP].payload)
+        f.close()
+        # print('reached hereeee')
+        f = open("/home/thanos/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "w")
+        write_string = '{} {} {} {}\n'.format(prev_dst,acked_idx,gener_time,t0_listener)
+        f.write(write_string) #update the multicast tree
+        f.close()
 
 def handle_pkt(pkt):
     # pkt.show()
@@ -43,11 +58,12 @@ def handle_pkt(pkt):
         line = f.read()
         prev_dst = int(line.split()[0])
         acked_idx = int(line.split()[1])
-	gener_time = float(line.split()[2])
+	gener_time = bytes(pkt[TCP].payload)
+	t0_listener = float(line.split()[3])
         f.close()
         # print('reached hereeee')
         f = open("/home/thanos/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "w")
-        write_string = '{} {} {}\n'.format(pkt[fwb].dst_id,pkt[fwb].pkt_id,bytes(pkt[TCP].payload))
+        write_string = '{} {} {} {}\n'.format(pkt[fwb].dst_id,pkt[fwb].pkt_id,gener_time,t0_listener)
         f.write(write_string) #update the multicast tree
         f.close()
         # send control acknowledge to the origin of the packet
@@ -67,7 +83,7 @@ def main():
     e =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff', type=TYPE_FWB)
     pkt_control_bbone =  TCP(dport=2222, sport=3333) / 'Confirming the change'
     f = open("/home/thanos/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "w")
-    write_string = '{} {} {}\n'.format(1,0,time.time())
+    write_string = '{} {} {} {}\n'.format(1,0,0,0) # prev_dst, acked_idx, generated_time, common t0
     f.write(write_string) #update the multicast tree
     f.close()
     # while True:
