@@ -42,6 +42,7 @@ def handle_pkt(pkt):
 
 def main():
     global t0
+    generating_time = {}
     t0 = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument('--ip_addr', type=str, default='10.0.2.2',help="The destination IP address to use")
@@ -71,17 +72,19 @@ def main():
         f.close()
         if dst_id in a_m_idx[prev_dst_id]:
             prev_dst_id = dst_id
+	    generating_time[sent_idx] = time.time()+t0_listener-t0
 	    pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(time.time()+t0_listener-t0)
             sent_idx = sent_idx + 1
-            sendp(pkt, inter=0.1, iface=iface, verbose=False)
+            sendp(pkt, inter=0.01, iface=iface, verbose=False)
         else:
             prev_dst_id = dst_id
-	    highest_buffered_idx = sent_idx
+	    highest_buffered_idx = sent_idx - 1
             sent_idx = acked_idx - 1
 	    #t1 = time.time()
 	    #print('from:{}, to:{}'.format(sent_idx,highest_buffered_idx))
-	    for i in range(acked_idx - 1,highest_buffered_idx):
-            	pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(transitioning_time)
+	    for i in range(acked_idx,highest_buffered_idx):
+		print(sent_idx)
+            	pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(generating_time[sent_idx+1])
             	sent_idx = sent_idx + 1
             	sendp(pkt, inter=0.001, iface=iface, verbose=False)
 

@@ -24,6 +24,17 @@ from scapy.all import IP, TCP, UDP, Raw
 from scapy.layers.inet import _IPOption_HDR
 
 
+
+# dst_id = 0 => multicast (S2 is primary, S3 is secondary)
+
+# dst_id = 1 => multicast (S3 is primary, S2 is secondary)
+
+# dst_id = 2 => S2 is primary, S3-UE link is down
+
+# dst_id = 3 => S3 is primary, S2-UE link is down
+
+# dst_id = 4 => both S2-UE and S3-UE links are down
+
 def update_multicast(prev_dst, next_dst, last_received):
     pkt_fwb_layer = fwb(dst_id=next_dst, pkt_id=last_received+1, pid=TYPE_IPV4)
     pkt_ip_layer = IP(dst='10.0.1.1')
@@ -31,43 +42,10 @@ def update_multicast(prev_dst, next_dst, last_received):
         #If starts to use bs2 as primary, notify BS2
         pkt_ip_layer = IP(dst='10.0.4.4')
     elif prev_dst == 1 and next_dst == 2:
-        #If starts to use bs2 as primary, notify BS2
+        #If starts to use bs1 as primary, notify BS1
         pkt_ip_layer = IP(dst='10.0.3.3')
     ctrl_pkt = e / pkt_fwb_layer / pkt_ip_layer / pkt_control_bbone
     return ctrl_pkt
-
-def outage_to_bs(dst_bs):
-    outage_to_bs = False 
-    chance = (random.randint(1,100)) 
-    if dst_bs < 125: # no outage
-	loss_prob = 0.0000001
-    elif dst_bs < 150: 
-	loss_prob = 0.1
-    elif dst_bs < 175: 
-	loss_prob = 0.35
-    elif dst_bs < 200: 
-	loss_prob = 0.75
-    else:
-	loss_prob = 1
-    if chance <= loss_prob*100:
-	outage_to_bs = True
-    return outage_to_bs
-
-def new_dst_id(outage1,outage2,prev_dst):
-    if prev_dst == 0 or prev_dst == 1:
-	if outage1 and not outage2: # BS1 is down and BS2 is up
-	    next_dst = 3
-	elif not outage1 and outage2: # BS1 is up and BS2 is down
-	    next_dst = 2 
-	else:
-	    next_dst = prev_dst
-    elif prev_dst == 2 or prev_dst == 3:
-	if not outage1 and not outage2:
-	    next_dst = prev_dst - 2 # 3->1, 2->0
-	else:
-	    next_dst = prev_dst
-    return next_dst
-
 
 def send_t0_listener(prev_dst, next_dst, last_received,t0_listener):
     pkt_fwb_layer = fwb(dst_id=next_dst, pkt_id=last_received+1, pid=TYPE_IPV4)
@@ -87,15 +65,9 @@ def handle_pkt(pkt):
     global received_packets
     global UE_delay
     global transition
-    global last_time
-    global received_packets
-    global dist_bs1
-    global dist_bs2
-    global delays
-    global row
 
     if fwb in pkt:
-	if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 2222: # confirming the change from listen_and_update
+	if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 2223: # confirming the change from listen_and_update
 	    transition = 0
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
 	    generated_time = bytes(pkt[TCP].payload)
@@ -109,29 +81,30 @@ def handle_pkt(pkt):
 # 		if condition about a_m_index - > foor a given ue state(prev_dst) check if prev_dst primary is correct for received packet dst.
 		received_packets.append(pkt[fwb].pkt_id)
 	        last_received = np.max(received_packets)
-		if transition:
+		if last_received == event_idx or transition:
              	    print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0+2*UE_delay/1000,prev_dst)) 
                     recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0+2*UE_delay/1000,prev_dst))
 		else:	
               	    #print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst)) 
                     recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
-                if last_received >= 20000:
+                if last_received >= 4000:
                     print('Done')
                     exit()
-	    current_time = time.time()
-            if current_time - last_time >= float(delays[row]):
-		last_time = current_time 
-		outage1 = outage_to_bs(float(dist_bs1[row]))
-		outage2 = outage_to_bs(float(dist_bs2[row]))
-		next_dst = new_dst_id(outage1,outage2,prev_dst) 
-                print('PKT IDX:{}, NXT_DST:{}, {}, {}'.format(last_received,next_dst,outage1,outage2))
-		#recording_file.write('{},{}\n'.format(last_received,time.time()-t0))
-		if next_dst != prev_dst:
-		    transition = 1
-                    notification_pkt = update_multicast(prev_dst,next_dst,last_received)
-                    sendp(notification_pkt, iface=iface, verbose=False)
+# 		else of am index:
+# 			observe packets coming here and why.
+# 			these packets here are coming from previous primary bs which supposed to be blocked.
+            if last_received == event_idx:
+		transition = 1
+                #last_received = pkt[fwb].pkt_id
+                next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
+                print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
+                event_idx = random.randint(500,510) + last_received
+                notification_pkt = update_multicast(prev_dst,next_dst,last_received)
+                sendp(notification_pkt, iface=iface, verbose=False)
                 prev_dst = next_dst
-		row += 1 
+            # else:
+                # pkt.show()
+                # sleep(200)
 
 
 def main():
@@ -141,15 +114,6 @@ def main():
     global a_m_idx
     global UE_delay 
     global transition
-    global dist_bs1
-    global dist_bs2
-    global delays
-    global row
-    global dist_bs1
-    global dist_bs2
-    global delays
-    global row
-    global last_time
 
     transition = 0
     # transitions = [[2,3],[2,3],[0,4],[1,4],[2,3]]
@@ -163,35 +127,12 @@ def main():
     #     prev_dst = f.read() #update the multicast tree
     #     prev_dst = int(prev_dst)
     #     f.close()
-
-    distance_file = "/home/thanos/tutorials/exercises/p4_FWB/realistic_loss_dist.txt"
-    f=open(distance_file,"r")
-    lines=f.readlines()
-    dist_bs1=[]
-    dist_bs2=[]
-    delays=[]
-    for x in lines:
-	sline = x.split(",")
-    	dist_bs1.append(sline[0]) #distances from BS1
-    f.close()
-    f=open(distance_file,"r")
-    for x in lines:
-	sline = x.split(",")
-    	dist_bs2.append(sline[1]) #distances from BS2
-    f.close()
-    f=open(distance_file,"r")
-    for x in lines:
-	sline = x.split(",")
-    	delays.append(sline[2].strip()) #time to stop 
-    f.close()
-    row = 1 # shows where in the realistic_loss file we are
-
     topo_file = "/home/thanos/tutorials/exercises/p4_FWB/pod-topo/topology.json"
     with open(topo_file, 'r') as f:
         topo = json.load(f)
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
-    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/burst_GW_realistic_loss/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/burst_GW_regular_loss/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
     recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 
@@ -212,7 +153,6 @@ def main():
     pkt_control_bbone =  TCP(dport=2222, sport=50002) / 'Primary change'
     pkt_control_bbone_t0 =  TCP(dport=2223, sport=50002) / ''
     t0 = time.time()
-    last_time = t0
     notification_pkt = send_t0_listener(1,0,0,str(t0))
     sendp(notification_pkt, iface=iface, verbose=False)
     last_received=0
