@@ -48,7 +48,7 @@ actions {
   preamble {
     id: 25652968
     name: "MyIngress.drop"
-    alias: "drop"
+    alias: "MyIngress.drop"
   }
 }
 actions {
@@ -85,6 +85,13 @@ actions {
     id: 19198950
     name: "MyIngress.multicast"
     alias: "multicast"
+  }
+}
+actions {
+  preamble {
+    id: 20880156
+    name: "MyEgress.drop"
+    alias: "MyEgress.drop"
   }
 }
 type_info {
