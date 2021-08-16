@@ -24,17 +24,6 @@ from scapy.all import IP, TCP, UDP, Raw
 from scapy.layers.inet import _IPOption_HDR
 
 
-
-# dst_id = 0 => multicast (S2 is primary, S3 is secondary)
-
-# dst_id = 1 => multicast (S3 is primary, S2 is secondary)
-
-# dst_id = 2 => S2 is primary, S3-UE link is down
-
-# dst_id = 3 => S3 is primary, S2-UE link is down
-
-# dst_id = 4 => both S2-UE and S3-UE links are down
-
 def update_multicast(prev_dst, next_dst, last_received):
     pkt_fwb_layer = fwb(dst_id=next_dst, pkt_id=last_received+1, pid=TYPE_IPV4)
     pkt_ip_layer = IP(dst='10.0.1.1')
@@ -98,9 +87,15 @@ def handle_pkt(pkt):
     global received_packets
     global UE_delay
     global transition
+    global last_time
+    global received_packets
+    global dist_bs1
+    global dist_bs2
+    global delays
+    global row
 
     if fwb in pkt:
-	if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 2223: # confirming the change from listen_and_update
+	if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 2222: # confirming the change from listen_and_update
 	    transition = 0
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
 	    generated_time = bytes(pkt[TCP].payload)
@@ -114,17 +109,17 @@ def handle_pkt(pkt):
 # 		if condition about a_m_index - > foor a given ue state(prev_dst) check if prev_dst primary is correct for received packet dst.
 		received_packets.append(pkt[fwb].pkt_id)
 	        last_received = np.max(received_packets)
-		if last_received == event_idx or transition:
+		if transition:
              	    print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0+2*UE_delay/1000,prev_dst)) 
                     recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0+2*UE_delay/1000,prev_dst))
 		else:	
               	    #print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst)) 
                     recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
-                if last_received >= 4000:
+                if last_received >= 20000:
                     print('Done')
                     exit()
 	    current_time = time.time()
-            if current_time - last_time >= float(delays[row])/10:
+            if current_time - last_time >= float(delays[row]):
 		last_time = current_time 
 		outage1 = outage_to_bs(float(dist_bs1[row]))
 		outage2 = outage_to_bs(float(dist_bs2[row]))
@@ -132,6 +127,7 @@ def handle_pkt(pkt):
                 print('PKT IDX:{}, NXT_DST:{}, {}, {}'.format(last_received,next_dst,outage1,outage2))
 		#recording_file.write('{},{}\n'.format(last_received,time.time()-t0))
 		if next_dst != prev_dst:
+		    transition = 1
                     notification_pkt = update_multicast(prev_dst,next_dst,last_received)
                     sendp(notification_pkt, iface=iface, verbose=False)
                 prev_dst = next_dst
@@ -153,6 +149,7 @@ def main():
     global dist_bs2
     global delays
     global row
+    global last_time
 
     transition = 0
     # transitions = [[2,3],[2,3],[0,4],[1,4],[2,3]]
@@ -167,7 +164,7 @@ def main():
     #     prev_dst = int(prev_dst)
     #     f.close()
 
-    distance_file = "/home/thanos/tutorials/exercises/p4_FWB/data_analysis/realistic_loss_dist.txt"
+    distance_file = "/home/thanos/tutorials/exercises/p4_FWB/realistic_loss_dist.txt"
     f=open(distance_file,"r")
     lines=f.readlines()
     dist_bs1=[]
@@ -194,7 +191,7 @@ def main():
         topo = json.load(f)
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
-    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/burst_GW_regular_loss/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/burst_GW_realistic_loss/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
     recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 
@@ -215,6 +212,7 @@ def main():
     pkt_control_bbone =  TCP(dport=2222, sport=50002) / 'Primary change'
     pkt_control_bbone_t0 =  TCP(dport=2223, sport=50002) / ''
     t0 = time.time()
+    last_time = t0
     notification_pkt = send_t0_listener(1,0,0,str(t0))
     sendp(notification_pkt, iface=iface, verbose=False)
     last_received=0
