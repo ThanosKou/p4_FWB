@@ -68,7 +68,7 @@ def handle_pkt(pkt):
 		    transition = True
                 print('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
                 recording_file.write('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
-                if last_received >= 4000:
+                if last_received >= 10000:
                     print('Done')
                     exit()
                 # print('{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))

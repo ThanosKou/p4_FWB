@@ -72,7 +72,7 @@ def main():
         pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(time.time()-t0)
         sent_idx = sent_idx + 1
         # pkt.show()
-        sendp(pkt, inter = 0.1, iface=iface, verbose=False)
+        sendp(pkt, inter = 0.01, iface=iface, verbose=False)
 
 
 if __name__ == '__main__':
