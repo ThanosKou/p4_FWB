@@ -87,7 +87,7 @@ def handle_pkt(pkt):
 		else:	
               	    #print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst)) 
                     recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
-                if last_received >= 10000:
+                if last_received >= 8100:
                     print('Done')
                     exit()
 # 		else of am index:
