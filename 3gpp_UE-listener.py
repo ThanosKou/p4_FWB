@@ -60,15 +60,15 @@ def handle_pkt(pkt):
     global transition
     if fwb in pkt:
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
-	    generated_time = bytes(pkt[TCP].payload)
+            generated_time = bytes(pkt[TCP].payload)
             if pkt[fwb].dst_id in a_m_idx[prev_dst] and pkt[fwb].pkt_id not in received_packets:
-		received_packets.append(pkt[fwb].pkt_id)
+                received_packets.append(pkt[fwb].pkt_id)
                 last_received = pkt[fwb].pkt_id
-		if last_received == event_idx:
-		    transition = True
+                if last_received == event_idx:
+                    transition = True
                 print('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
                 recording_file.write('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
-                if last_received >= 10000:
+                if last_received >= 8000:
                     print('Done')
                     exit()
                 # print('{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
@@ -107,7 +107,7 @@ def main():
         topo = json.load(f)
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
-    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/burst_GW_regular_loss/3gpp_pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/realistic_traffic_model/exponential/3gpp_pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
     recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 

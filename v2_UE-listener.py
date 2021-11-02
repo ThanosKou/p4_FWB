@@ -65,36 +65,36 @@ def handle_pkt(pkt):
     global received_packets
     global UE_delay
     global transition
+    global k
 
     if fwb in pkt:
-	if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 2223: # confirming the change from listen_and_update
-	    transition = 0
+        if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 2223: # confirming the change from listen_and_update
+            transition = 0
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
-	    generated_time = bytes(pkt[TCP].payload)
-	    if received_packets:
-	    	last_received = np.max(received_packets)
-	    else:
-		last_received = 0
-            #last_received = pkt[fwb].pkt_id
-            # if last_received + 1 == pkt[fwb].pkt_id:
+            generated_time = bytes(pkt[TCP].payload)
+            if received_packets:
+                last_received = np.max(received_packets)
+            else:
+                last_received = 0
+                #last_received = pkt[fwb].pkt_id
+                # if last_received + 1 == pkt[fwb].pkt_id:
             if pkt[fwb].pkt_id not in received_packets:
-# 		if condition about a_m_index - > foor a given ue state(prev_dst) check if prev_dst primary is correct for received packet dst.
-		received_packets.append(pkt[fwb].pkt_id)
-	        last_received = np.max(received_packets)
-		if last_received == event_idx or transition:
-             	    print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0+2*UE_delay/1000,prev_dst)) 
-                    recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0+2*UE_delay/1000,prev_dst))
-		else:	
-              	    #print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst)) 
+    # 		if condition about a_m_index - > foor a given ue state(prev_dst) check if prev_dst primary is correct for received packet dst.
+                received_packets.append(pkt[fwb].pkt_id)
+                last_received = np.max(received_packets)
+                if last_received == event_idx or transition:
+                    print('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0+k,prev_dst)) 
+                    recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0+k,prev_dst))
+                else:
                     recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
                 if last_received >= 8100:
                     print('Done')
                     exit()
-# 		else of am index:
-# 			observe packets coming here and why.
-# 			these packets here are coming from previous primary bs which supposed to be blocked.
+    # 		else of am index:
+    # 			observe packets coming here and why.
+    # 			these packets here are coming from previous primary bs which supposed to be blocked.
             if last_received == event_idx:
-		transition = 1
+                transition = 1
                 #last_received = pkt[fwb].pkt_id
                 next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
                 print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
@@ -103,8 +103,8 @@ def handle_pkt(pkt):
                 sendp(notification_pkt, iface=iface, verbose=False)
                 prev_dst = next_dst
             # else:
-                # pkt.show()
-                # sleep(200)
+                    # pkt.show()
+                    # sleep(200)
 
 
 def main():
@@ -114,6 +114,7 @@ def main():
     global a_m_idx
     global UE_delay 
     global transition
+    global k
 
     transition = 0
     # transitions = [[2,3],[2,3],[0,4],[1,4],[2,3]]
@@ -132,7 +133,8 @@ def main():
         topo = json.load(f)
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
-    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/burst_GW_regular_loss/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    k = 2*UE_delay/1000
+    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/realistic_traffic_model/exponential/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
     recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 

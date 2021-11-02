@@ -2,6 +2,8 @@ h1 ./clear_dst.sh
 h1 ./listen_and_update.py &
 h3 ./BS1.py &
 h4 ./BS2.py &
-h2 tcpdump -i eth0 -w UE_packets.pcap &
-xterm h2
-xterm h1
+h1 ./3gpp_listen_and_update.py &
+h2 ./v2_UE-listener.py &
+h1 ./reader_sender.py &
+h2.monitor()
+~

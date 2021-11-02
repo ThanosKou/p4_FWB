@@ -41,8 +41,8 @@ def find_common_t0(pkt):
         line = f.read()
         prev_dst = int(line.split()[0])
         acked_idx = int(line.split()[1])
-	gener_time = float(line.split()[2]) # in the first update packet, this contains the t0_listener
-	t0_listener = bytes(pkt[TCP].payload)
+        gener_time = float(line.split()[2]) # in the first update packet, this contains the t0_listener
+        t0_listener = bytes(pkt[TCP].payload)
         f.close()
         # print('reached hereeee')
         f = open("/home/thanos/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "w")
@@ -58,8 +58,8 @@ def handle_pkt(pkt):
         line = f.read()
         prev_dst = int(line.split()[0])
         acked_idx = int(line.split()[1])
-	gener_time = bytes(pkt[TCP].payload)
-	t0_listener = float(line.split()[3])
+        gener_time = bytes(pkt[TCP].payload)
+        t0_listener = float(line.split()[3])
         f.close()
         # print('reached hereeee')
         f = open("/home/thanos/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "w")
@@ -67,8 +67,7 @@ def handle_pkt(pkt):
         f.write(write_string) #update the multicast tree
         f.close()
         # send control acknowledge to the origin of the packet
-        notification_pkt = e / fwb(dst_id=prev_dst,
-                 pkt_id=0, pid=TYPE_IPV4) / IP(dst='10.0.2.2') / pkt_control_bbone
+        notification_pkt = e / fwb(dst_id=prev_dst, pkt_id=0, pid=TYPE_IPV4) / IP(dst='10.0.2.2') / pkt_control_bbone
         # notification_pkt.show()
         sendp(notification_pkt, iface=iface, verbose=False)
 
