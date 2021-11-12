@@ -6,4 +6,3 @@ h1 ./3gpp_listen_and_update.py &
 h2 ./v2_UE-listener.py &
 h1 ./reader_sender.py &
 h2.monitor()
-~

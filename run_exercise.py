@@ -355,8 +355,8 @@ class ExerciseRunner:
             print(' for example run:  cat %s/s1-p4runtime-requests.txt' % self.log_dir)
             print('')
 
-        CLI(self.net, script='/home/mfo254/tutorials/exercises/p4_FWB/init_script.sh')
-        #CLI(self.net, script='/home/mfo254/tutorials/exercises/p4_FWB/3gpp_init_script.sh')
+        #CLI(self.net, script='/home/mfo254/tutorials/exercises/p4_FWB/init_script.sh')
+        CLI(self.net, script='/home/mfo254/tutorials/exercises/p4_FWB/3gpp_init_script.sh')
         CLI(self.net)
 
 
