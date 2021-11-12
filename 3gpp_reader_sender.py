@@ -9,6 +9,7 @@ import argparse
 import time
 from time import sleep
 import numpy as np
+import csv
 
 from scapy.all import sendp, send, get_if_list, get_if_hwaddr, hexdump
 from scapy.all import Packet
@@ -91,6 +92,28 @@ def generate_traffic_model_M_D_1(mean_time, min_time_to_send):
     return A_new, queue_times
 
 
+def generate_traffic_model_VR(min_time_to_send):
+    A = []
+    with open('static_cloud_dataset_interarrival.csv', 'r') as fd:
+        reader = csv.reader(fd)
+        for row in reader:
+            A.append(float(row[0]))
+
+    cumSum = [sum(A[:i+1]) for i in range(len(A))]
+     # find what that is
+    depart = [0]*len(A)
+    depart[0] = cumSum[0]
+    for i in range(1,len(A)):
+        depart[i] = max(depart[i-1] + min_time_to_send, cumSum[i])
+    diff_list = []
+    for x, y in zip(depart[0::], depart[1::]):
+        diff_list.append(y-x)
+    A_new = [A[0]]+ diff_list
+    cumSum2 = [sum(A_new[:i+1]) for i in range(len(A_new))]
+    queue_times = [x-y for x,y in zip(cumSum2,cumSum) ]
+    return A_new, queue_times
+
+
 
 def main():
     global t0
@@ -115,8 +138,9 @@ def main():
     acked_idx = 0
     sent_idx = 0
     mean_time = 0.1
-    min_time_to_send = 0.05
-    inter_times, queue_times = generate_traffic_model_M_D_1(mean_time, min_time_to_send)
+    min_time_to_send = 0.1
+    CRB_rate = 0.1
+    inter_times, queue_times = generate_traffic_model_VR(min_time_to_send)
     traffic_ind = 0
  	
 
@@ -130,10 +154,12 @@ def main():
         f.close()
         if dst_id in a_m_idx[prev_dst_id]:
             prev_dst_id = dst_id
-            generating_times[sent_idx] = time.time() - t0 + t0_listener - queue_times[sent_idx%len(queue_times)]
+            generating_times[sent_idx] = time.time() - t0 + t0_listener
+            #generating_times[sent_idx] = time.time() - t0 + t0_listener - queue_times[sent_idx%len(queue_times)]
             pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(generating_times[sent_idx])
             sent_idx = sent_idx + 1
-            time_to_send = inter_times[traffic_ind%len(inter_times)]
+            #time_to_send = inter_times[traffic_ind%len(inter_times)]
+            time_to_send = CRB_rate
             sendp(pkt, inter=time_to_send, iface=iface, verbose=False)
             traffic_ind += 1
             #print(traffic_ind%len(traffic_model_rate))

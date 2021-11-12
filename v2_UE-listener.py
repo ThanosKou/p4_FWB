@@ -10,6 +10,7 @@ import json
 import time
 from time import sleep
 import os
+import csv
 
 from scapy.all import sendp, send, get_if_list, get_if_hwaddr, hexdump
 from scapy.all import Packet
@@ -87,7 +88,7 @@ def handle_pkt(pkt):
                     recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0+k,prev_dst))
                 else:
                     recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
-                if last_received >= 8100:
+                if last_received >= 20000:
                     print('Done')
                     exit()
     # 		else of am index:
@@ -134,7 +135,7 @@ def main():
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
     k = 2*UE_delay/1000
-    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/realistic_traffic_model/exponential/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/realistic_traffic_model/VR/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
     recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 

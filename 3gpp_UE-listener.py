@@ -68,7 +68,7 @@ def handle_pkt(pkt):
                     transition = True
                 print('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
                 recording_file.write('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
-                if last_received >= 8000:
+                if last_received >= 10000:
                     print('Done')
                     exit()
                 # print('{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
@@ -93,7 +93,7 @@ def main():
     global received_packets
     # transitions = [[2,3],[2,3],[0,4],[1,4],[2,3]]
     transitions = [[2,3],[2,3],[0],[1],[2,3]]
-    event_idx = random.randint(25,50)
+    event_idx = random.randint(25000,50000)
     a_m_idx = [[0,2],[1,3],[2,0],[3,1],[2,3]] # acceptable multicast ...
     #destinations for a prev_dst, for example adding a secondary bs or removing the secondary bs should still be valid even if prev_dst is different
     global recording_file
@@ -107,7 +107,7 @@ def main():
         topo = json.load(f)
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
-    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/realistic_traffic_model/exponential/3gpp_pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/CBR_test/3gpp_pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
     recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 
