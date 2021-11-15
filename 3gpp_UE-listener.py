@@ -76,7 +76,7 @@ def handle_pkt(pkt):
             if last_received == event_idx:
                 next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
                 print('PKT IDX:{}, NXT_DST:{}'.format(last_received,str(time.time()-t0)))
-                event_idx = random.randint(500,510) + last_received
+                event_idx = random.randint(100, 110) + last_received
                 notification_pkt = update_multicast(prev_dst,next_dst,last_received,str(time.time()-t0))
                 sendp(notification_pkt, iface=iface, verbose=False)
                 prev_dst = next_dst
@@ -91,9 +91,9 @@ def main():
     global transitions
     global a_m_idx
     global received_packets
-    # transitions = [[2,3],[2,3],[0,4],[1,4],[2,3]]
-    transitions = [[2,3],[2,3],[0],[1],[2,3]]
-    event_idx = random.randint(25000,50000)
+    transitions = [[2,3],[2,3],[0,4],[1,4],[2,3]]
+    #transitions = [[2,3],[2,3],[0],[1],[2,3]]
+    event_idx = random.randint(50,60)
     a_m_idx = [[0,2],[1,3],[2,0],[3,1],[2,3]] # acceptable multicast ...
     #destinations for a prev_dst, for example adding a secondary bs or removing the secondary bs should still be valid even if prev_dst is different
     global recording_file
