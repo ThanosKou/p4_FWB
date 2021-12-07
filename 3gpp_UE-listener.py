@@ -66,24 +66,26 @@ def handle_pkt(pkt):
                 last_received = pkt[fwb].pkt_id
                 if last_received == event_idx:
                     transition = True
-                print('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
-                recording_file.write('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,prev_dst))
+                print('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,pkt[fwb].dst_id))
+                recording_file.write('{},{},{},{}\n'.format(last_received,generated_time,time.time()-t0,pkt[fwb].dst_id))
                 if last_received >= 10000:
                     print('Done')
                     exit()
-                # print('{},{},{}\n'.format(last_received,time.time()-t0,prev_dst))
-            # print(last_received)
             if last_received == event_idx:
-                next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
                 print('PKT IDX:{}, NXT_DST:{}'.format(last_received,str(time.time()-t0)))
-                event_idx = random.randint(100, 110) + last_received
+                next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
+                if next_dst == 4:
+                    print('4')
+                    sleep(10)
+                    prev_dst = 4
+                    next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
+                
+                event_idx = random.randint(100,110) + last_received
                 notification_pkt = update_multicast(prev_dst,next_dst,last_received,str(time.time()-t0))
                 sendp(notification_pkt, iface=iface, verbose=False)
                 prev_dst = next_dst
-                last_received = last_received + 1
-
-
-
+                last_received += 1
+                
 
 def main():
     global iface

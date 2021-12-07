@@ -143,27 +143,27 @@ def main():
     inter_times, queue_times = generate_traffic_model_VR(min_time_to_send)
     traffic_ind = 0
  	
-
     while True:
         f = open("/home/thanos/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "r")
         line = f.read()
         dst_id = int(line.split()[0])
+        #dst_id = 4
         acked_idx = int(line.split()[1])
         transitioning_time = float(line.split()[2])
         t0_listener = float(line.split()[3])
         f.close()
         if dst_id in a_m_idx[prev_dst_id]:
             prev_dst_id = dst_id
+            #dst_id = 1
             generating_times[sent_idx] = time.time() - t0 + t0_listener
             #generating_times[sent_idx] = time.time() - t0 + t0_listener - queue_times[sent_idx%len(queue_times)]
             pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(generating_times[sent_idx])
-            sent_idx = sent_idx + 1
+            sent_idx += 1
             #time_to_send = inter_times[traffic_ind%len(inter_times)]
             time_to_send = CRB_rate
             sendp(pkt, inter=time_to_send, iface=iface, verbose=False)
             traffic_ind += 1
-            #print(traffic_ind%len(traffic_model_rate))
-			
+            #print(traffic_ind%len(traffic_model_rate))			
         else:
             prev_dst_id = dst_id
             highest_buffered_idx = sent_idx - 1
