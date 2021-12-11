@@ -58,6 +58,7 @@ def handle_pkt(pkt):
     global received_packets
     global t0
     global transition
+    global sleeping_time
     if fwb in pkt:
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
             generated_time = bytes(pkt[TCP].payload)
@@ -74,14 +75,16 @@ def handle_pkt(pkt):
             if last_received == event_idx:
                 print('PKT IDX:{}, NXT_DST:{}'.format(last_received,str(time.time()-t0)))
                 next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
+                outage_delay = 0 
                 if next_dst == 4:
-                    print('4')
-                    sleep(10)
+                    sleep(sleeping_time)
                     prev_dst = 4
                     next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
-                
-                event_idx = random.randint(100,110) + last_received
-                notification_pkt = update_multicast(prev_dst,next_dst,last_received,str(time.time()-t0))
+                    outage_delay = sleeping_time
+
+                event_idx = random.randint(250,255) + last_received
+
+                notification_pkt = update_multicast(prev_dst,next_dst,last_received,str(outage_delay))
                 sendp(notification_pkt, iface=iface, verbose=False)
                 prev_dst = next_dst
                 last_received += 1
@@ -109,7 +112,7 @@ def main():
         topo = json.load(f)
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
-    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/CBR_test/3gpp_pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/Nov/CBR_test_1000ms_outage/3gpp_pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
     recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 
@@ -124,8 +127,10 @@ def main():
     global pkt_control_bbone
     global pkt_control_bbone_t0
     global prev_dst
+    global sleeping_time 
     transition = False
     prev_dst = 1 #always start with case 1
+    sleeping_time = 1
     e =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff', type=TYPE_FWB)
     pkt_control_bbone =  TCP(dport=2222, sport=50002) / ''
     pkt_control_bbone_t0 =  TCP(dport=2223, sport=50002) / ''

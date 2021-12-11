@@ -62,6 +62,7 @@ def handle_pkt(pkt):
     global a_m_idx
     global prev_dst
     global recording_file
+    global sleeping_time
     global t0
     global received_packets
     global UE_delay
@@ -88,7 +89,7 @@ def handle_pkt(pkt):
                     recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0+k,prev_dst))
                 else:
                     recording_file.write('{},{},{},{}\n'.format(pkt[fwb].pkt_id,generated_time,time.time()-t0,prev_dst))
-                if last_received >= 20000:
+                if last_received >= 10000:
                     print('Done')
                     exit()
     # 		else of am index:
@@ -99,7 +100,11 @@ def handle_pkt(pkt):
                 #last_received = pkt[fwb].pkt_id
                 next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
                 print('PKT IDX:{}, NXT_DST:{}'.format(last_received,next_dst))
-                event_idx = random.randint(500,510) + last_received
+                if next_dst == 4:
+                    prev_dst = 4
+                    next_dst = int(np.random.choice(np.array(transitions[prev_dst])))
+                    sleep(sleeping_time)
+                event_idx = random.randint(250,255) + last_received
                 notification_pkt = update_multicast(prev_dst,next_dst,last_received)
                 sendp(notification_pkt, iface=iface, verbose=False)
                 prev_dst = next_dst
@@ -115,11 +120,13 @@ def main():
     global a_m_idx
     global UE_delay 
     global transition
+    global sleeping_time
     global k
 
+    sleeping_time = 1
     transition = 0
-    # transitions = [[2,3],[2,3],[0,4],[1,4],[2,3]]
-    transitions = [[2,3],[2,3],[0],[1],[2,3]]
+    transitions = [[2,3],[2,3],[0,4],[1,4],[2,3]]
+    #transitions = [[2,3],[2,3],[0],[1],[2,3]]
     event_idx = random.randint(25,50)
     a_m_idx = [[0,2],[1,3],[2,0],[3,1],[2,3]] # acceptable multicast ...
     #destinations for a prev_dst, for example adding a secondary bs or removing the secondary bs should still be valid even if prev_dst is different
@@ -135,7 +142,7 @@ def main():
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
     k = 2*UE_delay/1000
-    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/realistic_traffic_model/VR/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/VR_test_1000ms_outage_more_frequent/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
     recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 

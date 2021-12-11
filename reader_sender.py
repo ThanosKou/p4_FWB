@@ -134,11 +134,12 @@ def main():
     acked_idx = 0
     sent_idx = 0
     mean_time = 0.1
-    min_time_to_send = 0.007
+    #min_time_to_send = 0.007
+    min_time_to_send = 0.01
     inter_times, queue_times = generate_traffic_model_VR(min_time_to_send)
     mean_queue_time = sum(queue_times)/len(queue_times)
+    CBR_traffic = 0.1
     #inter_times, queue_times = generate_traffic_model_M_D_1(mean_time, min_time_to_send)
-    traffic_ind = 0
     
     while True:
         f = open("/home/thanos/tutorials/exercises/p4_FWB/dst_holder.txt", "r")
@@ -147,18 +148,15 @@ def main():
         acked_idx = int(line.split()[1])
         t0_listener = float(line.split()[2])
         f.close()
-        if dst_id == 4:
-            sleep(1)
-            continue
 
         generating_times[sent_idx] = time.time() - t0 - queue_times[sent_idx%len(queue_times)]
         if dst_id < 2:
             generating_times[sent_idx] -= mean_queue_time # add more queueing delay if multicast
         pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(generating_times[sent_idx])
-        time_to_send = inter_times[traffic_ind%len(inter_times)]
+        time_to_send = inter_times[sent_idx%len(inter_times)]
         sendp(pkt, inter=time_to_send, iface=iface, verbose=False)
-        traffic_ind += 1
-        sent_idx = sent_idx + 1
+        #sendp(pkt, inter=CBR_traffic, iface=iface, verbose=False)
+        sent_idx += 1
         # pkt.show()
         #sendp(pkt, inter = 0.01, iface=iface, verbose=False)
 
