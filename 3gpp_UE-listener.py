@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import argparse
 import sys
 import socket
@@ -11,6 +11,7 @@ import time
 from time import sleep
 import os
 
+from pathlib import Path
 from scapy.all import sendp, send, get_if_list, get_if_hwaddr, hexdump
 from scapy.all import Packet
 from scapy.all import Ether, IP, UDP, TCP
@@ -107,19 +108,19 @@ def main():
     #     prev_dst = f.read() #update the multicast tree
     #     prev_dst = int(prev_dst)
     #     f.close()
-    topo_file = "/home/thanos/tutorials/exercises/p4_FWB/pod-topo/topology.json"
+    topo_file = Path.cwd()/"pod-topo"/"topology.json"    
     with open(topo_file, 'r') as f:
         topo = json.load(f)
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
-    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/Nov/CBR_test_1000ms_outage/3gpp_pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    record_string = Path.cwd()/"out_data"/"3gpp_pkt_arrivals_{}ms_{}ms.txt".format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
     recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 
 
     ifaces = filter(lambda i: 'eth0' in i, os.listdir('/sys/class/net/'))
-    iface = ifaces[0]
-    print "UE listening: using %s" % iface
+    iface = next(iface)
+    print("UE listening: using %s" + iface)
 
     global transition
     global e
