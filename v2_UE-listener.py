@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import argparse
 import sys
 import socket
@@ -12,6 +12,7 @@ from time import sleep
 import os
 import csv
 
+from pathlib import Path
 from scapy.all import sendp, send, get_if_list, get_if_hwaddr, hexdump
 from scapy.all import Packet
 from scapy.all import Ether, IP, UDP, TCP
@@ -81,7 +82,7 @@ def handle_pkt(pkt):
                 #last_received = pkt[fwb].pkt_id
                 # if last_received + 1 == pkt[fwb].pkt_id:
             if pkt[fwb].pkt_id not in received_packets:
-    # 		if condition about a_m_index - > foor a given ue state(prev_dst) check if prev_dst primary is correct for received packet dst.
+    #       if condition about a_m_index - > foor a given ue state(prev_dst) check if prev_dst primary is correct for received packet dst.
                 received_packets.append(pkt[fwb].pkt_id)
                 last_received = np.max(received_packets)
                 if last_received == event_idx or transition:
@@ -92,9 +93,9 @@ def handle_pkt(pkt):
                 if last_received >= 10000:
                     print('Done')
                     exit()
-    # 		else of am index:
-    # 			observe packets coming here and why.
-    # 			these packets here are coming from previous primary bs which supposed to be blocked.
+    #       else of am index:
+    #           observe packets coming here and why.
+    #           these packets here are coming from previous primary bs which supposed to be blocked.
             if last_received == event_idx:
                 transition = 1
                 #last_received = pkt[fwb].pkt_id
@@ -136,20 +137,20 @@ def main():
     #     prev_dst = f.read() #update the multicast tree
     #     prev_dst = int(prev_dst)
     #     f.close()
-    topo_file = "/home/thanos/tutorials/exercises/p4_FWB/pod-topo/topology.json"
+    topo_file = Path.cwd()/"pod-topo"/"topology.json"
     with open(topo_file, 'r') as f:
         topo = json.load(f)
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
     k = 2*UE_delay/1000
-    record_string = '/home/thanos/tutorials/exercises/p4_FWB/out_data/VR_test_1000ms_outage_more_frequent/pkt_arrivals_{}ms_{}ms.txt'.format(GW_delay,UE_delay)
+    record_string = Path.cwd()/"out_data"/"pkt_arrivals_{}ms_{}ms.txt".format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
     recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 
 
     ifaces = filter(lambda i: 'eth0' in i, os.listdir('/sys/class/net/'))
-    iface = ifaces[0]
-    print "UE listening: using %s" % iface
+    iface = next(ifaces)
+    print("UE listening: using " + iface)
 
     global e
     global last_received
