@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import argparse
 import sys
 import socket
@@ -22,7 +22,7 @@ from scapy.all import Packet, IPOption
 from scapy.all import ShortField, IntField, LongField, BitField, FieldListField, FieldLenField
 from scapy.all import IP, TCP, UDP, Raw
 from scapy.layers.inet import _IPOption_HDR
-
+from pathlib import Path
 
 
 def BS_1_dst_id_map(dst_id):
@@ -52,7 +52,7 @@ def buffer_pkt_extract(my_buffer,ue_asks):
     to_send = [[pkt_id,gener_time] for [pkt_id,gener_time] in buffer_elem if pkt_id >= ue_asks]
     for pkt_id,gener_time in sorted(to_send):
         buff_pkt = e / fwb(dst_id=current_dst_id, pkt_id=pkt_id, pid=TYPE_IPV4)/ pkt_barebone / gener_time
-	#buff_pkt.show()
+    #buff_pkt.show()
         sendp(buff_pkt, inter=0.001, iface=iface, verbose=False)
 
 
@@ -80,17 +80,17 @@ def handle_pkt(pkt):
             notification_pkt = e / fwb(dst_id=pkt[fwb].dst_id,pkt_id=0,
                 pid=TYPE_IPV4)/IP(dst='10.0.1.1')/ TCP(dport=2222, sport=50003) / 'Notifying h1 (GW), BS1 is primary now Changed at packet idx {}'.format(ue_asks)
             sendp(notification_pkt,iface=iface,verbose=False)
-	    notification_pkt = e / fwb(dst_id=pkt[fwb].dst_id,pkt_id=0,
+        notification_pkt = e / fwb(dst_id=pkt[fwb].dst_id,pkt_id=0,
                 pid=TYPE_IPV4)/IP(dst='10.0.2.2')/ TCP(dport=2223, sport=50003) / 'Notifying UE, BS1 is primary now Changed at packet idx {}'.format(ue_asks)
             sendp(notification_pkt,iface=iface,verbose=False)
             # notification_pkt.show()
         elif pkt[IP].src =='10.0.1.1' and pkt[TCP].dport==1111: #received data packet
             current_state = BS_1_dst_id_map(pkt[fwb].dst_id)
             if current_state == 'secondary':
-            	pkt_idx = pkt[fwb].pkt_id
-            	my_buffer[w_idx] = [pkt_idx,str(bytes(pkt[TCP].payload))]
-            	w_idx = (w_idx+1)%BUFFER_LEN
-            	if isTransition:
+                pkt_idx = pkt[fwb].pkt_id
+                my_buffer[w_idx] = [pkt_idx,str(bytes(pkt[TCP].payload))]
+                w_idx = (w_idx+1)%BUFFER_LEN
+                if isTransition:
                     fwd_pkt = buffer_pkt_fwd(pkt)
                     # fwd_pkt.show()
                     current_state = 'primary'
@@ -116,8 +116,8 @@ def handle_pkt(pkt):
 def main():
     global iface
     ifaces = filter(lambda i: 'eth0' in i, os.listdir('/sys/class/net/'))
-    iface = ifaces[0]
-    print "base station: using %s" % iface
+    iface = next(ifaces)
+    print("base station: using " + iface)
     global e
     global last_received
     global pkt_barebone
