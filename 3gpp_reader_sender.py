@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import argparse
 import sys
 import math
@@ -22,7 +22,7 @@ from scapy.all import Packet, IPOption
 from scapy.all import ShortField, IntField, LongField, BitField, FieldListField, FieldLenField
 from scapy.all import IP, TCP, UDP, Raw
 from scapy.layers.inet import _IPOption_HDR
-
+from pathlib import Path
 
 def get_if():
     ifs=get_if_list()
@@ -32,7 +32,7 @@ def get_if():
             iface=i
             break;
     if not iface:
-        print "Cannot find eth0 interface"
+        print("Cannot find eth0 interface")
         exit(1)
     return iface
 
@@ -142,9 +142,10 @@ def main():
     CRB_rate = 0.01
     inter_times, queue_times = generate_traffic_model_VR(min_time_to_send)
     traffic_ind = 0
- 	
+    
     while True:
-        f = open("/home/thanos/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "r")
+        file = Path.cwd()/ "3gpp_dst_holder.txt"
+        f = open(file, "r")
         line = f.read()
         dst_id = int(line.split()[0])
         #dst_id = 4
@@ -161,7 +162,7 @@ def main():
             time_to_send = CRB_rate
             sendp(pkt, inter=time_to_send, iface=iface, verbose=False)
             traffic_ind += 1
-            #print(traffic_ind%len(traffic_model_rate))			
+            #print(traffic_ind%len(traffic_model_rate))         
         else:
             prev_dst_id = dst_id
             highest_buffered_idx = sent_idx - 1
@@ -169,10 +170,10 @@ def main():
             #t1 = time.time()
             #print('from:{}, to:{}'.format(sent_idx,highest_buffered_idx))
             for i in range(acked_idx+1,highest_buffered_idx+1):
-	            print(sent_idx)
-	            pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(generating_times[sent_idx]-outage_delay)
-	            sent_idx = sent_idx + 1
-	            sendp(pkt, inter= min_time_to_send, iface=iface, verbose=False)
+                print(sent_idx)
+                pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(generating_times[sent_idx]-outage_delay)
+                sent_idx = sent_idx + 1
+                sendp(pkt, inter= min_time_to_send, iface=iface, verbose=False)
 
 
 if __name__ == '__main__':
