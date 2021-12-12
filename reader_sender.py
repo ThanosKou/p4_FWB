@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import argparse
 import sys
 import socket
@@ -11,7 +11,7 @@ import csv
 import numpy as np
 from time import sleep
 
-
+from pathlib import Path
 from scapy.all import sendp, send, get_if_list, get_if_hwaddr, hexdump
 from scapy.all import Packet
 from scapy.all import Ether, IP, UDP, TCP
@@ -32,7 +32,7 @@ def get_if():
             iface=i
             break;
     if not iface:
-        print "Cannot find eth0 interface"
+        print("Cannot find eth0 interface")
         exit(1)
     return iface
 
@@ -142,7 +142,7 @@ def main():
     #inter_times, queue_times = generate_traffic_model_M_D_1(mean_time, min_time_to_send)
     
     while True:
-        f = open("/home/thanos/tutorials/exercises/p4_FWB/dst_holder.txt", "r")
+        f = f = open(Path.cwd()/"dst_holder.txt", "r")
         line = f.read()
         dst_id = int(line.split()[0])
         acked_idx = int(line.split()[1])
