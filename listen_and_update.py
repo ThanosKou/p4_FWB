@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import argparse
 import sys
 import socket
@@ -10,6 +10,7 @@ from time import sleep
 import os
 import subprocess
 
+from pathlib import Path
 from scapy.all import sendp, send, get_if_list, get_if_hwaddr, hexdump
 from scapy.all import Packet
 from scapy.all import Ether, IP, UDP, TCP
@@ -37,14 +38,14 @@ def get_if():
 def find_common_t0(pkt):
     if fwb in pkt and pkt[TCP].dport==2223 and pkt[TCP].sport!= 3333: # 2222 is control tcp ports
         # pkt.show()
-        f = open("/home/thanos/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "r")
+        f = open(Path.cwd()/"dst_holder.txt", "r")
         line = f.read()
         prev_dst = int(line.split()[0])
         acked_idx = int(line.split()[1])
         t0_listener = bytes(pkt[TCP].payload)
         f.close()
         # print('reached hereeee')
-        f = open("/home/thanos/tutorials/exercises/p4_FWB/3gpp_dst_holder.txt", "w")
+        f = open(Path.cwd()/"dst_holder.txt", "w")
         write_string = '{} {} {}\n'.format(prev_dst,acked_idx,t0_listener)
         f.write(write_string) #update the multicast tree
         f.close()
@@ -54,14 +55,14 @@ def handle_pkt(pkt):
     # pkt.show()
     if fwb in pkt and pkt[TCP].dport==2222 and pkt[TCP].sport!= 3333: # 2222 is control tcp ports
         # pkt.show()
-        f = open("/home/thanos/tutorials/exercises/p4_FWB/dst_holder.txt", "r")
+        f = open(Path.cwd()/"dst_holder.txt", "r")
         line = f.read()
         prev_dst = int(line.split()[0])
         acked_idx = int(line.split()[1])
         t0_listener = float(line.split()[2])
         f.close()
         # print('reached hereeee')
-        f = open("/home/thanos/tutorials/exercises/p4_FWB/dst_holder.txt", "w")
+        f = open(Path.cwd()/"dst_holder.txt", "w")
         write_string = '{} {} {}\n'.format(pkt[fwb].dst_id,pkt[fwb].pkt_id,t0_listener)
         f.write(write_string) #update the multicast tree
         f.close()
@@ -75,8 +76,8 @@ def handle_pkt(pkt):
 def main():
     global iface
     ifaces = filter(lambda i: 'eth' in i, os.listdir('/sys/class/net/'))
-    iface = ifaces[0]
-    print "sniffing on %s" % iface
+    iface = next(ifaces)
+    print("sniffing on " + iface)
     global e
     global pkt_control_bbone
     e =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff', type=TYPE_FWB)
