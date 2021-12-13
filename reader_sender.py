@@ -136,7 +136,8 @@ def main():
     mean_time = 0.1
     #min_time_to_send = 0.007
     min_time_to_send = 0.01
-    inter_times, queue_times = generate_traffic_model_VR(min_time_to_send)
+    #inter_times, queue_times = generate_traffic_model_VR(min_time_to_send)
+    inter_times, queue_times = generate_traffic_model_M_D_1(mean_time, min_time_to_send)
     mean_queue_time = sum(queue_times)/len(queue_times)
     CBR_traffic = 0.1
     #inter_times, queue_times = generate_traffic_model_M_D_1(mean_time, min_time_to_send)

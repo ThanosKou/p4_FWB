@@ -1,5 +1,1 @@
-h1 ./3gpp_listen_and_update.py &
-h2 ./3gpp_UE-listener.py &
-h1 ./3gpp_reader_sender.py &
-h2.monitor()
-#xterm h1 h1 h2 
+xterm h1 h1 h2 

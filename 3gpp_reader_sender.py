@@ -139,8 +139,8 @@ def main():
     sent_idx = 0
     mean_time = 0.01
     min_time_to_send = 0.001
-    CRB_rate = 0.01
-    inter_times, queue_times = generate_traffic_model_VR(min_time_to_send)
+    CRB_rate = 0.0001
+    inter_times, queue_times = generate_traffic_model_M_D_1(mean_time, min_time_to_send)
     traffic_ind = 0
     
     while True:
@@ -154,8 +154,8 @@ def main():
         t0_listener = float(line.split()[3])
         f.close()
         if dst_id in a_m_idx[prev_dst_id]:
-            #generating_times[sent_idx] = time.time() - t0 + t0_listener
-            generating_times[sent_idx] = time.time() - t0 + t0_listener - queue_times[sent_idx%len(queue_times)]
+            generating_times[sent_idx] = time.time() - t0 + t0_listener
+            #generating_times[sent_idx] = time.time() - t0 + t0_listener - queue_times[sent_idx%len(queue_times)]
             pkt = e / fwb(dst_id=dst_id, pkt_id=sent_idx+1, pid=TYPE_IPV4) /  pkt_barebone / str(generating_times[sent_idx])
             sent_idx += 1
             #time_to_send = inter_times[traffic_ind%len(inter_times)]

@@ -62,7 +62,7 @@ def handle_pkt(pkt):
     global sleeping_time
     if fwb in pkt:
         if pkt[IP].dst == '10.0.2.2' and pkt[TCP].dport == 1111: # 1111 data layer
-            generated_time = bytes(pkt[TCP].payload)
+            generated_time = float(bytes(pkt[TCP].payload))
             if pkt[fwb].dst_id in a_m_idx[prev_dst] and pkt[fwb].pkt_id not in received_packets:
                 received_packets.append(pkt[fwb].pkt_id)
                 last_received = pkt[fwb].pkt_id
@@ -99,7 +99,8 @@ def main():
     global received_packets
     transitions = [[2,3],[2,3],[0,4],[1,4],[2,3]]
     #transitions = [[2,3],[2,3],[0],[1],[2,3]]
-    event_idx = random.randint(50,60)
+    event_idx = -1
+    #event_idx = random.randint(50,60)
     a_m_idx = [[0,2],[1,3],[2,0],[3,1],[2,3]] # acceptable multicast ...
     #destinations for a prev_dst, for example adding a secondary bs or removing the secondary bs should still be valid even if prev_dst is different
     global recording_file
@@ -113,14 +114,14 @@ def main():
         topo = json.load(f)
     GW_delay = topo['links'][0][2]
     UE_delay = topo['links'][1][2]
-    record_string = Path.cwd()/"out_data"/"3gpp_pkt_arrivals_{}ms_{}ms.txt".format(GW_delay,UE_delay)
+    record_string = Path.cwd()/"out_data"/"test"/"3gpp_pkt_arrivals_{}ms_{}ms.txt".format(GW_delay,UE_delay)
     recording_file = open(record_string, "w")
     recording_file.write('PacketSeqNo,GeneratedTime(sec),ArrivalTime(sec),MulticastIdx\n')
 
 
     ifaces = filter(lambda i: 'eth0' in i, os.listdir('/sys/class/net/'))
-    iface = next(iface)
-    print("UE listening: using %s" + iface)
+    iface = next(ifaces)
+    print("UE listening: using " + iface)
 
     global transition
     global e

@@ -31,7 +31,7 @@ def get_if():
             iface=i
             break;
     if not iface:
-        print "Cannot find eth0 interface"
+        print("Cannot find eth0 interface")
         exit(1)
     return iface
 
@@ -42,7 +42,7 @@ def find_common_t0(pkt):
         line = f.read()
         prev_dst = int(line.split()[0])
         acked_idx = int(line.split()[1])
-        t0_listener = bytes(pkt[TCP].payload)
+        t0_listener = float(bytes(pkt[TCP].payload))
         f.close()
         # print('reached hereeee')
         f = open(Path.cwd()/"dst_holder.txt", "w")
