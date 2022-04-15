@@ -16,9 +16,9 @@ FWB-GW: The FWB-GW is the first P4switch that a downlink packet reaches after it
 %Note that in our simulation, we have simplified the operation of the FWB-GW. Normally, the FWB-GW contains the routing related information. However, for simplicity we have assigned this responsibility to the 5G-CN node, as in our mininet topology 
 Base Station (BS): In our emulation, the gNBs of the FWB network are also P4 switches. Similar to the FWB-GW, when a BS receives a downlink packet, it parses its header, and based on the destination IP and the FWB Dst ID, it performs an action. The possible actions in the gNB-DU node are:
 ```
-*forwarding: this action is performed if this is the master gNB of the UE, which is indicated by the FWB Dst ID. In this case, the BS forwards the packet to the UE.
-*buffer: this action is performed if the gNB is the secondary gNB-DU of the UE, which is also indicated by the FWB Dst ID. In this case, the gNB-DU stores the downlink packet to its downlink buffer. The buffer implementation is described in the following subsection. 
-*drop: this action is performed if the gNB does not serve the UE.
+  * forwarding: this action is performed if this is the master gNB of the UE, which is indicated by the FWB Dst ID. In this case, the BS forwards the packet to the UE.
+  * buffer: this action is performed if the gNB is the secondary gNB-DU of the UE, which is also indicated by the FWB Dst ID. In this case, the gNB-DU stores the downlink packet to its downlink buffer. The buffer implementation is described in the following subsection. 
+  * drop: this action is performed if the gNB does not serve the UE.
 ```
 
 Buffer
