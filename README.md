@@ -30,6 +30,10 @@ In our simulation, each gNB node has a downlink buffer, which is implemented by 
 ## UE: 
 The UE is implemented as a mininet host and apart from receiving downlink traffic, it is responsible for notifying the rest of the FWB network about link changes. Specifically, at the times when a serving BS gets blocked, the UE sends FWB control packets that contain a) a Dst ID indicating the multicast tree update and b) a Pckt ID corresponding to the last successfully received packet. Recall that, the serving gNB will then forward this FWB control packet to its buffer node, which will immediately send all packets with a sequence number equal or higher than the Pckt ID. At the same time, the buffer node will forward the FWB control packet to its upstream, so that it reaches the 5G-CN node and FWB header of the downlink traffic is updated.
 
+## Modified Packet 
+
+% The format of a packet in the FWB network is shown in Fig.~\ref{fig:fwb_header}(a). In the FWB network, the packet header includes the \textit{FWB header}, which contains three fields, the Protocol ID, the Destination ID (Dst ID), and the Packet ID (Pckt ID). The Protocol ID is used to identify the type of the next header, which in this case is the IP header. The Dst ID provides routing information: it indicates which gNBs belong to the UE multicast tree, as well as which gNB is master. For our network example, the mapping between Dst ID and the corresponding routing is shown in Fig.~\ref{fig:fwb_header}(b). The Pckt ID field contains a sequence number for the current packet. The \code{P4} switches can parse and process these customized packets according to rules that are generated in the network setup. 
+
 
 # Prerequisites 
 
