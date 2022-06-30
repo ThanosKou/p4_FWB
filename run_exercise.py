@@ -355,7 +355,6 @@ class ExerciseRunner:
             print('')
 
         CLI(self.net, script = "/home/wigig/tutorials/exercises/p4_FWB/fwb_init_script.sh")
-       # CLI(self.net, script = "/home/wigig/tutorials/exercises/p4_FWB/3gpp_init_script.sh")
         #CLI(self.net)
 
 def get_args():
