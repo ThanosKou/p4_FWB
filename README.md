@@ -35,15 +35,15 @@ We also provided a init script for 3GPP, to run 3GPP scenario simply change the 
 
 ## Running the experiments
 Now that we cleared all the prerequisites, dependencies and folder setup, we can run our first experiment.
-First, adjust the link delays (if you need to), [topology](https://github.com/ThanosKou/p4_FWB/blob/main/pod-topo/topology.json).
-Then, run the experiment for the FWB architecture
+First, adjust the link delays (if you need to) by modifying the [topology file](https://github.com/ThanosKou/p4_FWB/blob/main/pod-topo/topology.json).
+Then, run the experiment for the FWB architecture:
 ```
 ./prep_FWB.sh
 sudo make run
 ```
 This will start the mininet topology and start the processes on the hosts. The UE then will record each packet arrival time to the [data folder](https://github.com/ThanosKou/p4_FWB/tree/main/out_data).
 
-To run the experiment for the 3GPP architecture 
+To run the experiment for the 3GPP architecture:
 ```
 ./prep_3GPP.sh
 sudo make run
