@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # Copyright 2013-present Barefoot Networks, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,6 +32,8 @@ from mininet.cli import CLI
 from p4runtime_switch import P4RuntimeSwitch
 import p4runtime_lib.simple_controller
 
+from pathlib import Path 
+
 def configureP4Switch(**switch_args):
     """ Helper class that is called by mininet to initialize
         the virtual P4 switches. The purpose is to ensure each
@@ -45,7 +47,7 @@ def configureP4Switch(**switch_args):
                 P4RuntimeSwitch.__init__(self, *opts, **kwargs)
 
             def describe(self):
-                print "%s -> gRPC port: %d" % (self.name, self.grpc_port)
+                print("%s -> gRPC port: %d" % (self.name, self.grpc_port))
 
         return ConfiguredP4RuntimeSwitch
     else:
@@ -59,7 +61,7 @@ def configureP4Switch(**switch_args):
                 P4Switch.__init__(self, *opts, **kwargs)
 
             def describe(self):
-                print "%s -> Thrift port: %d" % (self.name, self.thrift_port)
+                print("%s -> Thrift port: %d" % (self.name, self.thrift_port))
 
         return ConfiguredP4Switch
 
@@ -79,7 +81,7 @@ class ExerciseTopo(Topo):
             else:
                 switch_links.append(link)
 
-        for sw, params in switches.iteritems():
+        for sw, params in switches.items():
             if "program" in params:
                 switchClass = configureP4Switch(
                         sw_path=bmv2_exe,
@@ -100,7 +102,6 @@ class ExerciseTopo(Topo):
             self.addLink(host_name, sw_name,
                          delay=link['latency'], bw=link['bandwidth'],
                          port2=sw_port)
-            print(link['latency'])
 
         for link in switch_links:
             sw1_name, sw1_port = self.parse_switch_node(link['node1'])
@@ -108,8 +109,6 @@ class ExerciseTopo(Topo):
             self.addLink(sw1_name, sw2_name,
                         port1=sw1_port, port2=sw2_port,
                         delay=link['latency'], bw=link['bandwidth'])
-            # print(link['latency'])
-
 
 
     def parse_switch_node(self, node):
@@ -146,7 +145,7 @@ class ExerciseRunner:
 
     def format_latency(self, l):
         """ Helper method for parsing link latencies from the topology json. """
-        if isinstance(l, (str, unicode)):
+        if isinstance(l, str):
             return l
         else:
             return str(l) + "ms"
@@ -300,7 +299,7 @@ class ExerciseRunner:
             P4Runtime, depending if any command or runtime JSON files were
             provided for the switches.
         """
-        for sw_name, sw_dict in self.switches.iteritems():
+        for sw_name, sw_dict in self.switches.items():
             if 'cli_input' in sw_dict:
                 self.program_switch_cli(sw_name, sw_dict)
             if 'runtime_json' in sw_dict:
@@ -309,7 +308,7 @@ class ExerciseRunner:
     def program_hosts(self):
         """ Execute any commands provided in the topology.json file on each Mininet host
         """
-        for host_name, host_info in self.hosts.items():
+        for host_name, host_info in list(self.hosts.items()):
             h = self.net.get(host_name)
             if "commands" in host_info:
                 for cmd in host_info["commands"]:
@@ -355,10 +354,8 @@ class ExerciseRunner:
             print(' for example run:  cat %s/s1-p4runtime-requests.txt' % self.log_dir)
             print('')
 
-        CLI(self.net, script='/home/mfo254/tutorials/exercises/p4_FWB/init_script.sh')
-        #CLI(self.net, script='/home/mfo254/tutorials/exercises/p4_FWB/3gpp_init_script.sh')
-        CLI(self.net)
-
+        CLI(self.net, script = "/home/wigig/tutorials/exercises/p4_FWB/fwb_init_script.sh")
+        #CLI(self.net)
 
 def get_args():
     cwd = os.getcwd()

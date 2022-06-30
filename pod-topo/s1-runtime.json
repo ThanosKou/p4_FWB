@@ -56,17 +56,6 @@
     {
       "table": "MyIngress.ipv4_lpm",
       "match": {
-        "hdr.ipv4.dstAddr": ["10.0.1.1", 32],"hdr.fwb.dst_id": 4
-      },
-      "action_name": "MyIngress.ipv4_forward",
-      "action_params": {
-        "dstAddr": "08:00:00:00:01:11",
-        "port": 1
-      }
-    },
-    {
-      "table": "MyIngress.ipv4_lpm",
-      "match": {
         "hdr.ipv4.dstAddr": ["10.0.2.2", 32],"hdr.fwb.dst_id": 0
       },
       "action_name": "MyIngress.multicast",
@@ -85,24 +74,27 @@
       "match": {
         "hdr.ipv4.dstAddr": ["10.0.2.2", 32],"hdr.fwb.dst_id": 2
       },
-      "action_name": "MyIngress.ipv4_forward",
-      "action_params": {
-        "dstAddr": "08:00:00:00:03:00",
-        "port": 2
-      }
+      "action_name": "MyIngress.multicast",
+      "action_params": {}
     },
-     {
+    {
       "table": "MyIngress.ipv4_lpm",
       "match": {
         "hdr.ipv4.dstAddr": ["10.0.2.2", 32],"hdr.fwb.dst_id": 3
       },
-      "action_name": "MyIngress.ipv4_forward",
-      "action_params": {
-        "dstAddr": "08:00:00:00:04:00",
-        "port": 3
-      }
+      "action_name": "MyIngress.multicast",
+      "action_params": {}
+    },
+	{
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ipv4.dstAddr": ["10.0.2.2", 32],"hdr.fwb.dst_id": 4
+      },
+      "action_name": "MyIngress.drop",
+      "action_params": {}
     }
   ], 
+
   "multicast_group_entries" : [
     {
       "multicast_group_id" : 1,
@@ -113,6 +105,10 @@
         },
         {
           "egress_port" : 3,
+          "instance" : 1
+        },
+        {
+          "egress_port" : 4,
           "instance" : 1
         }
       ]
