@@ -4,6 +4,37 @@ This implements the FWB logic in the network shown in simple_topology.jpg.
 
 Specifically, Switch 1 (S1) plays the role of the FWB-GW. Switches 2 and 3 (S2 & S3 including their hosts h3 & h4, respectively) act as the primary and secondary BS of the UE, respectively. Switch 4 (S4) is a virtual switch and acts us a sink node for the UE.
 
+Next, we will describe the role of each node in our FWB network emulation. 
+## 5G-CN 
+The downlink packet is generated here along with the FWB header. For the FWB header, the Protocol ID is always 0x800 indicating that the next header is IP. The Pckt ID is set as 1 for the first packet of every new UE-specific flow, and it is increased by 1 every time a downlink packet for that UE is generated. The Dst ID is originally set as 0, which indicates normal FWB operation: BS1 is the master gNB-DU, and BS2 is the secondary gNB-DU. The 5G-CN node will keep using the same Dst ID, until it receives an FWB control packet from the UE, which carries a different Dst ID. As soon as the 5G-CN receives the control packet, it will use the new Dst ID for downlink traffic.
+
+## FWB-GW
+The FWB-GW is the first P4switch that a downlink packet reaches after it leaves the 5G-CN. The FWB-GW inspects the packet header and based on the destination IP and the FWB Dst ID, it performs an action. The possible actions in the FWB-GW node are:
+```
+ * multicast: this action is performed if the UE is connected to both gNBs, i.e., if Dst ID is 0 or 1. In this case, the FWB-GW multicasts the downlink packet to both gNBs. 
+ * forwarding: this action is performed if the UE is connected to only one gNB, i.e., if Dst ID is 2 or 3. In this case, the FWB-GW will only forward to the serving gNB. 
+ * drop: this action is performed if the UE is out-of-service.
+```    
+Note that in our simulation, we have simplified the operation of the FWB-GW. Normally, the FWB-GW contains the routing related information. However, for simplicity we have assigned this responsibility to the 5G-CN node, as in our mininet topology 
+
+## Base Station (BS)
+In our emulation, the gNBs of the FWB network are also P4 switches. Similar to the FWB-GW, when a BS receives a downlink packet, it parses its header, and based on the destination IP and the FWB Dst ID, it performs an action. The possible actions in the gNB-DU node are:
+```
+  * forwarding: this action is performed if this is the master gNB of the UE, which is indicated by the FWB Dst ID. In this case, the BS forwards the packet to the UE.
+  * buffer: this action is performed if the gNB is the secondary gNB-DU of the UE, which is also indicated by the FWB Dst ID. In this case, the gNB-DU stores the downlink packet to its downlink buffer. The buffer implementation is described in the following subsection. 
+  * drop: this action is performed if the gNB does not serve the UE.
+```
+
+## Buffer
+In our simulation, each gNB node has a downlink buffer, which is implemented by a corresponding host in our mininet topology. After a successful buffer match-action, the secondary gNB forwards the packet to the buffer node. A downlink packet remains at the buffer until either it becomes the oldest packet and there is no extra buffer space or the gNB is assigned to be the master gNB-DU for the specific UE. The master gNB assignment occurs through an FWB control packet. The FWB control packet also contains a Pckt ID, which is the sequence number of the next packet that the UE requires to be transmitted. The buffer node will then forward this packet and all packets with a sequence number higher than the Pckt ID to the UE. At the same time, the buffer node forwards the FWB control packet to its upstream, so that it reaches the 5G-CN node and the FWB header of the downlink traffic is updated.
+## UE: 
+The UE is implemented as a mininet host and apart from receiving downlink traffic, it is responsible for notifying the rest of the FWB network about link changes. Specifically, at the times when a serving BS gets blocked, the UE sends FWB control packets that contain a) a Dst ID indicating the multicast tree update and b) a Pckt ID corresponding to the last successfully received packet. Recall that, the serving gNB will then forward this FWB control packet to its buffer node, which will immediately send all packets with a sequence number equal or higher than the Pckt ID. At the same time, the buffer node will forward the FWB control packet to its upstream, so that it reaches the 5G-CN node and FWB header of the downlink traffic is updated.
+
+## Modified Packet 
+
+% The format of a packet in the FWB network is shown in Fig.~\ref{fig:fwb_header}(a). In the FWB network, the packet header includes the \textit{FWB header}, which contains three fields, the Protocol ID, the Destination ID (Dst ID), and the Packet ID (Pckt ID). The Protocol ID is used to identify the type of the next header, which in this case is the IP header. The Dst ID provides routing information: it indicates which gNBs belong to the UE multicast tree, as well as which gNB is master. For our network example, the mapping between Dst ID and the corresponding routing is shown in Fig.~\ref{fig:fwb_header}(b). The Pckt ID field contains a sequence number for the current packet. The \code{P4} switches can parse and process these customized packets according to rules that are generated in the network setup. 
+
+
 # Prerequisites 
 
 In order for this to work, we need to have p4 installed  and the related dependencies. If you haven't already installed p4, you can use the instructions in https://github.com/jafingerhut/p4-guide to do so.
