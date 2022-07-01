@@ -27,7 +27,8 @@ In our emulation, the gNBs of the FWB network are also P4 switches. Similar to t
 
 ## Buffer
 In our simulation, each gNB node has a downlink buffer, which is implemented by a corresponding host in our mininet topology. After a successful buffer match-action, the secondary gNB forwards the packet to the buffer node. A downlink packet remains at the buffer until either it becomes the oldest packet and there is no extra buffer space or the gNB is assigned to be the master gNB-DU for the specific UE. The master gNB assignment occurs through an FWB control packet. The FWB control packet also contains a Pckt ID, which is the sequence number of the next packet that the UE requires to be transmitted. The buffer node will then forward this packet and all packets with a sequence number higher than the Pckt ID to the UE. At the same time, the buffer node forwards the FWB control packet to its upstream, so that it reaches the 5G-CN node and the FWB header of the downlink traffic is updated.
-## UE: 
+
+## UE
 The UE is implemented as a mininet host and apart from receiving downlink traffic, it is responsible for notifying the rest of the FWB network about link changes. Specifically, at the times when a serving BS gets blocked, the UE sends FWB control packets that contain a) a Dst ID indicating the multicast tree update and b) a Pckt ID corresponding to the last successfully received packet. Recall that, the serving gNB will then forward this FWB control packet to its buffer node, which will immediately send all packets with a sequence number equal or higher than the Pckt ID. At the same time, the buffer node will forward the FWB control packet to its upstream, so that it reaches the 5G-CN node and FWB header of the downlink traffic is updated.
 
 ## Modified Packet 
