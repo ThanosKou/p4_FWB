@@ -32,7 +32,7 @@ The UE is implemented as a mininet host and apart from receiving downlink traffi
 
 ## Modified Packet 
 
-% The format of a packet in the FWB network is shown in Fig.~\ref{fig:fwb_header}(a). In the FWB network, the packet header includes the \textit{FWB header}, which contains three fields, the Protocol ID, the Destination ID (Dst ID), and the Packet ID (Pckt ID). The Protocol ID is used to identify the type of the next header, which in this case is the IP header. The Dst ID provides routing information: it indicates which gNBs belong to the UE multicast tree, as well as which gNB is master. For our network example, the mapping between Dst ID and the corresponding routing is shown in Fig.~\ref{fig:fwb_header}(b). The Pckt ID field contains a sequence number for the current packet. The \code{P4} switches can parse and process these customized packets according to rules that are generated in the network setup. 
+In the FWB proof-of-concept implementation, the packet header includes the FWB header, which contains three fields: the Protocol ID, the Destination ID (Dst ID), and the Packet ID (Pckt ID). The Protocol ID is used to identify the type of the next header, which in this case is the IP header. The Dst ID provides routing information: it indicates which gNBs belong to the UE multicast tree, as well as which gNB is master. For our network example, the mapping between Dst ID and the corresponding routing is shown [here]. The Pckt ID field contains a sequence number for the current packet. The \code{P4} switches can parse and process these customized packets according to rules that are generated in the network setup. 
 
 
 # Prerequisites 
